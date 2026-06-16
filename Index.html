@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>REXSTOP SALES &amp; WARRANTY SYSTEM</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    body { box-sizing: border-box; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #475569; }
+  </style>
+ </head>
+ <body class="h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white font-sans min-h-screen flex flex-col relative select-none">
+
+  <div id="auth-screen" class="fixed inset-0 z-[100] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-800 via-slate-900 to-black flex flex-col items-center justify-center transition-opacity duration-500">
+   <div class="absolute inset-0 overflow-hidden pointer-events-none">
+     <div class="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-blue-600/10 blur-[120px]"></div>
+     <div class="absolute bottom-[10%] -right-[10%] w-[40%] h-[40%] rounded-full bg-violet-600/10 blur-[100px]"></div>
+   </div>
+   <div class="bg-slate-800/60 backdrop-blur-xl border border-slate-700/50 rounded-3xl p-10 max-w-md w-full mx-4 shadow-[0_0_50px_-12px_rgba(0,0,0,0.8)] relative z-10 text-center">
+    <div class="relative mx-auto w-24 h-24 mb-6 flex items-center justify-center">
+      <div class="absolute inset-0 bg-blue-500/20 rounded-full blur-xl animate-pulse"></div>
+      <div class="absolute inset-0 border-2 border-blue-500/30 rounded-2xl rotate-45 transition-transform duration-700 hover:rotate-90"></div>
+      <div class="relative bg-gradient-to-br from-blue-600 to-violet-800 w-16 h-16 rounded-xl rotate-45 flex items-center justify-center shadow-lg border border-blue-400/50">
+         <i data-lucide="shield-check" class="w-8 h-8 text-white -rotate-45 drop-shadow-md"></i>
+      </div>
+    </div>
+    <h2 class="text-3xl font-black mb-1 tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-violet-400">REXSTOP CLOUD</h2>
+    <p class="text-slate-400 text-xs mb-8 font-semibold tracking-wider uppercase">Encrypted Enterprise Portal</p>
+    <form id="auth-form" class="space-y-5">
+     <div class="relative group">
+      <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-colors group-focus-within:text-blue-400 text-slate-500">
+         <i data-lucide="key" class="w-5 h-5"></i>
+      </div>
+      <input type="password" id="auth-password" class="w-full pl-12 pr-5 py-4 bg-slate-900/80 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-lg transition shadow-inner placeholder-slate-600" placeholder="Enter Master Key" required>
+     </div>
+     <p id="auth-error" class="text-rose-400 text-xs font-bold hidden transition bg-rose-500/10 py-2.5 rounded-lg border border-rose-500/20 shadow-inner">
+       <i data-lucide="alert-circle" class="w-3.5 h-3.5 inline mb-0.5 mr-1"></i> Access Denied. Incorrect key.
+     </p>
+     <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 px-6 py-4 rounded-xl font-bold transition flex items-center justify-center gap-2 shadow-lg shadow-blue-900/30 hover:shadow-blue-900/50 transform hover:-translate-y-0.5 duration-200 text-white border border-blue-500/50">
+      <i data-lucide="unlock" class="w-5 h-5"></i> Authenticate
+     </button>
+    </form>
+   </div>
+   <div class="absolute bottom-8 text-slate-600 text-[10px] font-bold tracking-widest uppercase flex items-center gap-2">
+      <i data-lucide="lock" class="w-3 h-3"></i> AES-256 Cloud Synchronization
+   </div>
+  </div>
+
+  <div id="delete-modal" class="hidden fixed inset-0 bg-black/75 items-center justify-center z-50 backdrop-blur-sm">
+   <div class="bg-slate-800 border border-slate-700 rounded-lg p-8 max-w-sm mx-4 shadow-xl">
+    <h3 class="text-xl font-bold mb-4 flex items-center gap-3"><i data-lucide="alert-circle" class="text-red-500"></i> Confirm Delete</h3>
+    <p class="text-slate-300 mb-6">Are you sure you want to delete this record?</p>
+    <div class="flex gap-4">
+      <button type="button" id="confirm-delete-btn" class="flex-1 bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg font-semibold transition flex items-center justify-center gap-1"> 
+        <i data-lucide="trash-2" class="w-4 h-4"></i> Delete 
+      </button> 
+      <button type="button" id="cancel-delete-btn" class="flex-1 bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg font-semibold transition"> Cancel </button>
+    </div>
+   </div>
+  </div>
+
+  <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-10 opacity-0 transition-all duration-300 pointer-events-none bg-slate-800 border border-slate-700 px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3">
+    <div class="p-1 rounded-full bg-emerald-500/10 text-emerald-500">
+      <i data-lucide="check-circle" class="w-5 h-5"></i>
+    </div>
+    <div>
+      <p id="toast-message" class="font-medium text-sm text-slate-100">Action performed successfully</p>
+    </div>
+  </div>
+
+  <div id="main-scroll-container" class="flex-1 w-full overflow-auto scroll-smooth">
+   <div class="p-6 max-w-7xl mx-auto">
+    
+    <div class="mb-8 flex items-center justify-between flex-wrap gap-4 border-b border-slate-800 pb-6">
+     <div>
+      <h1 class="text-4xl font-bold mb-2 tracking-tight">📊 REXSTOP CLOUD SYSTEM</h1>
+      <p class="text-slate-400">Sales, Warranty Claims, Debtors, Inventory, &amp; Business Overheads</p>
+     </div>
+     <div class="flex items-center gap-3">
+       <div id="sync-status-indicator" class="bg-slate-800/80 border border-slate-700 rounded-full px-4 py-2 flex items-center gap-2 text-xs font-semibold cursor-pointer hover:border-blue-500 transition" onclick="switchTab('tab-sync')">
+         <span class="w-2.5 h-2.5 rounded-full bg-red-500" id="status-dot"></span>
+         <span id="status-text" class="text-slate-300">Offline (Awaiting Sheet URL)</span>
+       </div>
+     </div>
+    </div>
+
+    <div class="flex gap-2 mb-8 border-b border-slate-700 overflow-x-auto pb-px scrollbar-none">
+      <button type="button" id="tab-dashboard" class="tab-btn px-5 py-3 font-semibold border-b-2 border-blue-500 text-blue-400 bg-slate-800/40 rounded-t-lg transition flex items-center gap-2 shrink-0"> <i data-lucide="bar-chart-3" class="w-4 h-4"></i>Dashboard </button> 
+      <button type="button" id="tab-entry" class="tab-btn px-5 py-3 font-semibold border-b-2 border-transparent text-slate-400 hover:text-white transition flex items-center gap-2 shrink-0"> <i data-lucide="plus-circle" class="w-4 h-4"></i>Add Sales </button> 
+      <button type="button" id="tab-warranty" class="tab-btn px-5 py-3 font-semibold border-b-2 border-transparent text-slate-400 hover:text-white transition flex items-center gap-2 shrink-0"> <i data-lucide="shield-check" class="w-4 h-4"></i>Warranty </button> 
+      <button type="button" id="tab-debtor" class="tab-btn px-5 py-3 font-semibold border-b-2 border-transparent text-slate-400 hover:text-white transition flex items-center gap-2 shrink-0"> <i data-lucide="user-check" class="w-4 h-4"></i>Debtors </button> 
+      <button type="button" id="tab-stock" class="tab-btn px-5 py-3 font-semibold border-b-2 border-transparent text-slate-400 hover:text-white transition flex items-center gap-2 shrink-0"> <i data-lucide="package" class="w-4 h-4"></i>Stock Count </button> 
+      <button type="button" id="tab-commission" class="tab-btn px-5 py-3 font-semibold border-b-2 border-transparent text-slate-400 hover:text-white transition flex items-center gap-2 shrink-0"> <i data-lucide="wallet" class="w-4 h-4"></i>Commission </button> 
+      <button type="button" id="tab-overhead" class="tab-btn px-5 py-3 font-semibold border-b-2 border-transparent text-slate-400 hover:text-white transition flex items-center gap-2 shrink-0"> <i data-lucide="building-2" class="w-4 h-4"></i>Overheads </button>
+      <button type="button" id="tab-sync" class="tab-btn px-5 py-3 font-semibold border-b-2 border-transparent text-slate-400 hover:text-white transition flex items-center gap-2 shrink-0"> <i data-lucide="cloud" class="w-4 h-4"></i>Cloud Sync </button>
+    </div>
+
+    <div id="dashboard-tab" class="tab-content block space-y-8">
+     <div class="bg-slate-800/40 rounded-xl p-6 border border-slate-700/80 shadow-lg">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-semibold flex items-center gap-2"><i data-lucide="calendar" class="text-blue-500 w-5 h-5"></i> Filter Timeline</h2>
+        <button type="button" id="clear-dashboard-filter" class="text-xs text-slate-400 hover:text-white transition underline">Reset filters</button>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+       <div>
+         <label class="block text-xs text-slate-400 mb-2 font-medium">Start Date</label> 
+         <input type="date" id="filter-start-date" class="w-full px-4 py-2.5 bg-slate-900/80 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500 text-sm">
+       </div>
+       <div>
+         <label class="block text-xs text-slate-400 mb-2 font-medium">End Date</label> 
+         <input type="date" id="filter-end-date" class="w-full px-4 py-2.5 bg-slate-900/80 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500 text-sm">
+       </div>
+       <div>
+         <label class="block text-xs text-slate-400 mb-2 font-medium">Quick Presets</label> 
+         <select id="quick-view" class="w-full px-4 py-2.5 bg-slate-900/80 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-blue-500 text-sm"> 
+           <option value="all">All Time</option> 
+           <option value="month">This Month</option> 
+           <option value="year">This Year</option> 
+         </select>
+       </div>
+       <div class="flex items-end">
+         <button type="button" id="apply-filter" class="w-full bg-blue-600 hover:bg-blue-700 px-4 py-2.5 rounded-lg font-semibold transition text-sm flex items-center justify-center gap-2"> 
+           <i data-lucide="check" class="w-4 h-4"></i> Apply Filters 
+         </button>
+       </div>
+      </div>
+     </div>
+
+     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4">
+      <div class="bg-slate-800/40 border border-slate-700/80 rounded-xl p-5 shadow-md">
+       <div class="flex flex-col justify-between h-full">
+         <span class="text-slate-400 text-xs font-bold uppercase tracking-wider">Total Sales</span>
+         <span id="kpi-sales" class="text-2xl font-black text-blue-400 mt-2">RM 0.00</span>
+         <div class="flex items-center justify-between mt-3 text-blue-500/80">
+           <span class="text-[10px] text-slate-500 font-medium">Gross Revenue</span>
+         </div>
+       </div>
+      </div>
+      <div class="bg-slate-800/40 border border-slate-700/80 rounded-xl p-5 shadow-md">
+       <div class="flex flex-col justify-between h-full">
+         <span class="text-slate-400 text-xs font-bold uppercase tracking-wider">Parts &amp; Stock</span>
+         <span id="kpi-costs" class="text-2xl font-black text-rose-400 mt-2">RM 0.00</span>
+         <div class="flex items-center justify-between mt-3 text-rose-500/80">
+           <span class="text-[10px] text-slate-500 font-medium">Stock Outflow</span>
+         </div>
+       </div>
+      </div>
+      <div class="bg-slate-800/40 border border-slate-700/80 rounded-xl p-5 shadow-md">
+       <div class="flex flex-col justify-between h-full">
+         <span class="text-slate-400 text-xs font-bold uppercase tracking-wider">Overhead Costs</span>
+         <span id="kpi-overheads" class="text-2xl font-black text-amber-500 mt-2">RM 0.00</span>
+         <div class="flex items-center justify-between mt-3 text-amber-500">
+           <span class="text-[10px] text-slate-500 font-medium">Operating Expenses</span>
+         </div>
+       </div>
+      </div>
+      <div class="bg-red-950/20 border-2 border-red-500/40 rounded-xl p-5 shadow-lg">
+       <div class="flex flex-col justify-between h-full">
+         <span class="text-red-400 text-xs font-bold uppercase tracking-wider">Warranty Loss</span>
+         <span id="kpi-loss" class="text-2xl font-black text-red-500 mt-2">RM 0.00</span>
+         <div class="flex items-center justify-between mt-3 text-red-400">
+           <span class="text-[10px] text-red-400/70 font-semibold">Leaking Cash</span>
+         </div>
+       </div>
+      </div>
+      <div class="bg-emerald-950/30 border-2 border-emerald-500/60 rounded-xl p-5 shadow-xl">
+       <div class="flex flex-col justify-between h-full">
+         <span class="text-emerald-400 text-xs font-extrabold uppercase tracking-wider">Net Profit</span>
+         <span id="kpi-net-profit" class="text-2xl font-black text-emerald-400 mt-2">RM 0.00</span>
+         <div class="flex items-center justify-between mt-3 text-emerald-400">
+           <span class="text-[10px] text-emerald-400/70 font-semibold">Pure Corporate Keep</span>
+         </div>
+       </div>
+      </div>
+      <div class="bg-violet-950/20 border-2 border-violet-500/40 rounded-xl p-5 shadow-lg">
+       <div class="flex flex-col justify-between h-full">
+         <span class="text-violet-400 text-xs font-bold uppercase tracking-wider">Unpaid Debt</span>
+         <span id="kpi-debt" class="text-2xl font-black text-violet-400 mt-2">RM 0.00</span>
+         <div class="flex items-center justify-between mt-3 text-violet-400">
+           <span class="text-[10px] text-violet-400/70 font-semibold">Outstanding Debt</span>
+         </div>
+       </div>
+      </div>
+      <div class="bg-slate-800/40 border border-slate-700/80 rounded-xl p-5 shadow-md">
+       <div class="flex flex-col justify-between h-full">
+         <span class="text-slate-400 text-xs font-bold uppercase tracking-wider">Profit Margin</span>
+         <span id="kpi-margin" class="text-2xl font-black text-amber-400 mt-2">0.0%</span>
+         <div class="flex items-center justify-between mt-3 text-amber-400/80">
+           <span class="text-[10px] text-slate-500">Business Efficiency</span>
+         </div>
+       </div>
+      </div>
+     </div>
+
+     <div class="bg-slate-800/40 rounded-xl p-6 border border-slate-700/80 shadow-lg">
+      <div class="flex items-center justify-between mb-6 flex-wrap gap-4">
+       <div>
+        <h2 class="text-xl font-bold flex items-center gap-2"><i data-lucide="line-chart" class="text-blue-500"></i> Performance Matrix</h2>
+       </div>
+       <select id="graph-period" class="px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-white focus:outline-none"> 
+         <option value="day">Daily Breakdown</option> 
+         <option value="month" selected>Monthly Overview</option> 
+         <option value="year">Annual Summary</option> 
+       </select>
+      </div>
+      <div class="bg-slate-900/40 rounded-lg p-4 h-72">
+       <canvas id="revenue-chart"></canvas>
+      </div>
+     </div>
+
+      <div class="bg-slate-800/40 rounded-xl p-6 border border-slate-700/80 shadow-lg mt-8">
+       <h2 class="text-xl font-bold flex items-center gap-2 mb-4"><i data-lucide="smartphone" class="text-blue-500 w-5 h-5"></i> Top 10 Repaired Models</h2>
+       <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-800/20">
+         <table class="w-full text-sm border-collapse">
+           <thead>
+             <tr class="border-b border-slate-800 bg-slate-900/40 text-left">
+               <th class="px-4 py-3 text-slate-400 font-bold text-xs uppercase tracking-wider w-16 text-center">Rank</th>
+               <th class="px-4 py-3 text-slate-400 font-bold text-xs uppercase tracking-wider">Device Model</th>
+               <th class="px-4 py-3 text-slate-400 font-bold text-xs uppercase tracking-wider text-right">Repairs Logged</th>
+             </tr>
+           </thead>
+           <tbody id="top-models-body" class="divide-y divide-slate-800/80">
+             <tr><td colspan="3" class="px-4 py-8 text-center text-slate-500">No repair data calculated yet.</td></tr>
+           </tbody>
+         </table>
+       </div>
+      </div>
+
+       <div class="flex items-center justify-between mb-6 flex-wrap gap-4 mt-8">
+        <div class="flex items-center gap-3">
+         <h2 class="text-lg font-bold flex items-center gap-2"><i data-lucide="clipboard-list" class="text-blue-500"></i> Sales Registry</h2>
+         <select id="sales-month-smart-filter" class="px-3 py-1 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white focus:outline-none font-medium">
+           <option value="all">All Months</option><option value="01">Jan</option><option value="02">Feb</option><option value="03">Mar</option><option value="04">Apr</option><option value="05">May</option><option value="06">Jun</option><option value="07">Jul</option><option value="08">Aug</option><option value="09">Sep</option><option value="10">Oct</option><option value="11">Nov</option><option value="12">Dec</option>
+         </select>
+         <select id="sales-year-smart-filter" class="px-3 py-1 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white focus:outline-none font-medium"></select>
+        </div>
+        <div class="flex gap-3 flex-wrap items-center">
+         <input type="text" id="sales-search" class="px-4 py-2 bg-slate-800/60 border border-slate-700 rounded-lg text-sm text-white focus:outline-none w-64" placeholder="Filter bill, name, or technician..."> 
+         <button type="button" id="sales-sort-btn" class="bg-slate-800 hover:bg-slate-700 px-4 py-2 border border-slate-700 rounded-lg text-sm font-semibold transition"><span id="sales-sort-text">Sort: Newest</span></button> 
+        </div>
+       </div>
+
+       <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-800/20">
+        <table class="w-full text-sm border-collapse">
+         <thead>
+          <tr class="border-b border-slate-800 bg-slate-900/40 text-left">
+           <th class="px-5 py-3.5 text-slate-400 font-bold text-xs uppercase tracking-wider w-10">#</th>
+           <th class="px-5 py-3.5 text-slate-400 font-bold text-xs uppercase tracking-wider">Bill No</th>
+           <th class="px-5 py-3.5 text-slate-400 font-bold text-xs uppercase tracking-wider">Date</th>
+           <th class="px-5 py-3.5 text-slate-400 font-bold text-xs uppercase tracking-wider">Customer</th>
+           <th class="px-5 py-3.5 text-slate-400 font-bold text-xs uppercase tracking-wider">Technician</th>
+           <th class="px-5 py-3.5 text-slate-400 font-bold text-xs uppercase tracking-wider">Model</th>
+           <th class="px-5 py-3.5 text-slate-400 font-bold text-xs uppercase tracking-wider">Item / Repair</th>
+           <th class="px-5 py-3.5 text-slate-400 font-bold text-xs uppercase tracking-wider text-right">Sales</th>
+           <th class="px-5 py-3.5 text-slate-400 font-bold text-xs uppercase tracking-wider text-right">Cost</th>
+           <th class="px-5 py-3.5 text-slate-400 font-bold text-xs uppercase tracking-wider text-right">Loss</th>
+           <th class="px-5 py-3.5 text-slate-400 font-bold text-xs uppercase tracking-wider text-right">Comm</th>
+           <th class="px-5 py-3.5 text-slate-400 font-bold text-xs uppercase tracking-wider text-right">Net Profit</th>
+           <th class="px-5 py-3.5 text-slate-400 font-bold text-xs uppercase tracking-wider text-center">Action</th>
+          </tr>
+         </thead>
+         <tbody id="sales-table-body" class="divide-y divide-slate-800/80">
+          <tr><td colspan="13" class="px-4 py-8 text-center text-slate-500">No records found.</td></tr>
+         </tbody>
+        </table>
+       </div>
+       <div class="flex items-center justify-between mt-6 flex-wrap gap-4">
+        <div class="text-slate-400 text-xs"><span id="sales-records-info" class="font-medium">Showing 0 records</span></div>
+        <div class="flex gap-2">
+          <button type="button" id="sales-prev-btn" class="bg-slate-800 hover:bg-slate-700 disabled:opacity-40 border border-slate-700 px-4 py-2 rounded-lg text-xs font-semibold">Prev</button> 
+          <button type="button" id="sales-next-btn" class="bg-slate-800 hover:bg-slate-700 disabled:opacity-40 border border-slate-700 px-4 py-2 rounded-lg text-xs font-semibold">Next</button>
+        </div>
+       </div>
+    </div>
+
+    <div id="entry-tab" class="tab-content hidden">
+     <div class="max-w-4xl mx-auto">
+      <div class="bg-slate-800/40 border border-slate-700/80 rounded-xl p-8 shadow-xl">
+       <h2 class="text-2xl font-bold mb-6 flex items-center gap-2"><i data-lucide="plus-circle" class="text-blue-500"></i> New Transaction Entry</h2>
+       <form id="sales-form" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div><label class="block text-sm font-semibold text-slate-300 mb-2">Bill Number *</label><input type="text" id="form-billno" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm font-mono" required></div>
+        <div><label class="block text-sm font-semibold text-slate-300 mb-2">Transaction Date *</label><input type="date" id="form-date" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm" required></div>
+        <div><label class="block text-sm font-semibold text-slate-300 mb-2">Customer Name</label><input type="text" id="form-name" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm"></div>
+        <div><label class="block text-sm font-semibold text-slate-300 mb-2">Phone Number</label><input type="tel" id="form-phone" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm"></div>
+        <div><label class="block text-sm font-semibold text-slate-300 mb-2">Device Model *</label><input type="text" id="form-model" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm" required></div>
+        <div><label class="block text-sm font-semibold text-slate-300 mb-2">Repair Item *</label><input type="text" id="form-item" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm" required></div>
+        <div><label class="block text-sm font-semibold text-slate-300 mb-2">PIC / Technician</label><input type="text" id="form-pic" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm"></div>
+        <div><label class="block text-sm font-semibold text-slate-300 mb-2">Parts Supplier</label><input type="text" id="form-supplier" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm"></div>
+        
+        <div class="border-t border-slate-800 md:col-span-2 pt-4 my-2"><h3 class="text-xs font-bold text-blue-400 uppercase tracking-wider mb-4">Financial Metrics</h3></div>
+        <div><label class="block text-sm font-semibold text-slate-300 mb-2">Sales Amount (RM) *</label><input type="number" id="form-sales" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm" step="0.01" required></div>
+        <div><label class="block text-sm font-semibold text-slate-300 mb-2">Part Cost (RM) *</label><input type="number" id="form-cost" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm" step="0.01" required></div>
+        <div><label class="block text-sm font-semibold text-slate-300 mb-2">Profit (RM)</label><input type="number" id="form-profit" class="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-slate-400 text-sm" readonly></div>
+        <div><label class="block text-sm font-semibold text-slate-300 mb-2">Assigned Loss (RM)</label><input type="number" id="form-loss" class="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-slate-400 text-sm" readonly value="0.00"></div>
+        <div><label class="block text-sm font-semibold text-slate-300 mb-2">Tech Commission (RM) *</label><input type="number" id="form-commission" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm" step="0.01"></div>
+        <div><label class="block text-sm font-semibold text-slate-300 mb-2">Net Corporate Profit (RM)</label><input type="number" id="form-net-profit" class="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-slate-400 text-sm" readonly></div>
+        <div class="md:col-span-2"><label class="block text-sm font-semibold text-slate-300 mb-2">Notes</label><input type="text" id="form-note" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm"></div>
+        
+        <div class="md:col-span-2 flex gap-4 mt-6">
+          <button type="submit" id="sales-submit-btn" class="flex-1 bg-blue-600 hover:bg-blue-700 px-6 py-3.5 rounded-lg font-bold transition">Save Sale Record</button> 
+          <button type="button" id="reset-form-btn" class="flex-1 bg-slate-700 hover:bg-slate-600 px-6 py-3.5 rounded-lg font-bold transition">Clear Fields</button>
+        </div>
+       </form>
+      </div>
+     </div>
+    </div>
+
+    <div id="warranty-tab-view" class="tab-content hidden space-y-8">
+     <div class="max-w-4xl mx-auto">
+      <div class="bg-slate-800/40 border border-slate-700/80 rounded-xl p-8 shadow-xl">
+       <h2 class="text-2xl font-bold mb-6 flex items-center gap-2 text-rose-500"><i data-lucide="shield-alert"></i> Initiate Warranty Claim</h2>
+       <form id="warranty-form" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div><label class="block text-sm font-semibold text-slate-300 mb-2">Linked Bill Number *</label><input type="text" id="warranty-billno" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm font-mono" required><span id="warranty-autofill-status" class="text-[10px] text-amber-500 mt-1 block"></span></div>
+        <div><label class="block text-sm font-semibold text-slate-300 mb-2">Claim Date *</label><input type="date" id="warranty-date" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm" required></div>
+        <div><label class="block text-sm font-semibold text-slate-300 mb-2">Customer Name *</label><input type="text" id="warranty-name" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm" required></div>
+        <div><label class="block text-sm font-semibold text-slate-300 mb-2">Phone Number *</label><input type="tel" id="warranty-phone" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm" required></div>
+        <div><label class="block text-sm font-semibold text-slate-300 mb-2">Device Model *</label><input type="text" id="warranty-model" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm" required></div>
+        <div><label class="block text-sm font-semibold text-slate-300 mb-2">Defect *</label><input type="text" id="warranty-item" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm" required></div>
+        <div><label class="block text-sm font-semibold text-slate-300 mb-2">Supplier</label><input type="text" id="warranty-supplier" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm"></div>
+        <div><label class="block text-sm font-semibold text-slate-300 mb-2">Status</label><select id="warranty-status" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm"><option value="pending">Pending</option><option value="completed">Resolved</option></select></div>
+        <div><label class="block text-sm font-semibold text-slate-300 mb-2">Repair Cost (RM) *</label><input type="number" id="warranty-cost" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm" step="0.01" required></div>
+        <div><label class="block text-sm font-semibold text-slate-300 mb-2">Assigned Loss (RM)</label><input type="number" id="warranty-loss" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm" step="0.01"></div>
+        <div class="md:col-span-2"><label class="block text-sm font-semibold text-slate-300 mb-2">Notes</label><input type="text" id="warranty-notes" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm"></div>
+        <div class="md:col-span-2 flex gap-4 mt-6">
+          <button type="submit" id="warranty-submit-btn" class="flex-1 bg-rose-600 hover:bg-rose-700 px-6 py-3.5 rounded-lg font-bold transition">Record Claim</button> 
+          <button type="button" id="reset-warranty-form" class="flex-1 bg-slate-700 hover:bg-slate-600 px-6 py-3.5 rounded-lg font-bold transition">Clear Form</button>
+        </div>
+       </form>
+      </div>
+     </div>
+     
+     <div>
+       <div class="flex items-center justify-between mb-6 flex-wrap gap-4">
+        <h2 class="text-xl font-bold flex items-center gap-2"><i data-lucide="list" class="text-rose-500"></i> Claims Ledger</h2>
+        <div class="flex items-center gap-2">
+           <select id="warranty-month-smart-filter" class="px-3 py-1 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white focus:outline-none font-medium"><option value="all">All Months</option><option value="01">Jan</option><option value="02">Feb</option><option value="03">Mar</option><option value="04">Apr</option><option value="05">May</option><option value="06">Jun</option><option value="07">Jul</option><option value="08">Aug</option><option value="09">Sep</option><option value="10">Oct</option><option value="11">Nov</option><option value="12">Dec</option></select>
+           <select id="warranty-year-smart-filter" class="px-3 py-1 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white focus:outline-none font-medium"></select>
+           <select id="warranty-status-filter" class="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white"><option value="all">All Statuses</option><option value="pending" selected>Pending</option><option value="completed">Resolved</option></select>
+        </div>
+       </div>
+       <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-800/20">
+        <table class="w-full text-sm border-collapse">
+         <thead>
+          <tr class="border-b border-slate-800 bg-slate-900/40 text-left">
+           <th class="px-4 py-3.5 text-slate-400 font-bold text-xs uppercase">Date</th>
+           <th class="px-4 py-3.5 text-slate-400 font-bold text-xs uppercase">Bill No</th>
+           <th class="px-4 py-3.5 text-slate-400 font-bold text-xs uppercase">Customer</th>
+           <th class="px-4 py-3.5 text-slate-400 font-bold text-xs uppercase">Item &amp; Issue</th>
+           <th class="px-4 py-3.5 text-slate-400 font-bold text-xs uppercase text-right">Rep. Cost (RM)</th>
+           <th class="px-4 py-3.5 text-slate-400 font-bold text-xs uppercase text-right">Loss Assigned</th>
+           <th class="px-4 py-3.5 text-slate-400 font-bold text-xs uppercase text-center">Status</th>
+           <th class="px-4 py-3.5 text-slate-400 font-bold text-xs uppercase text-center">Action</th>
+          </tr>
+         </thead>
+         <tbody id="warranty-table-body" class="divide-y divide-slate-800/80"></tbody>
+        </table>
+       </div>
+       <div class="flex items-center justify-between mt-6 flex-wrap gap-4">
+        <div class="text-slate-400 text-xs"><span id="warranty-records-info" class="font-medium">Showing 0 records</span></div>
+        <div class="flex gap-2">
+          <button type="button" id="warranty-prev-btn" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 px-4 py-2 rounded-lg text-xs font-semibold">Prev</button> 
+          <button type="button" id="warranty-next-btn" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 px-4 py-2 rounded-lg text-xs font-semibold">Next</button>
+        </div>
+       </div>
+     </div>
+    </div>
+
+    <div id="debtor-tab-view" class="tab-content hidden space-y-8">
+     <div class="max-w-4xl mx-auto">
+      <div class="bg-slate-800/40 border border-slate-700/80 rounded-xl p-8 shadow-xl">
+       <h2 class="text-2xl font-bold mb-6 flex items-center gap-2 text-violet-400"><i data-lucide="user-plus"></i> New Debtor Profile</h2>
+       <form id="debtor-form" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div><label class="block text-sm font-semibold text-slate-300 mb-2">Associated Bill Number *</label><input type="text" id="debtor-billno" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm font-mono" required><span id="debtor-autofill-status" class="text-[10px] text-amber-500 mt-1 block"></span></div>
+        <div><label class="block text-sm font-semibold text-slate-300 mb-2">Debtor Name *</label><input type="text" id="debtor-name" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm" required></div>
+        <div><label class="block text-sm font-semibold text-slate-300 mb-2">Phone Number *</label><input type="tel" id="debtor-phone" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm" required></div>
+        <div><label class="block text-sm font-semibold text-slate-300 mb-2">Total Due (RM) *</label><input type="number" id="debtor-total" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm" step="0.01" required></div>
+        <div><label class="block text-sm font-semibold text-slate-300 mb-2">Paid So Far (RM) *</label><input type="number" id="debtor-paid" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm" step="0.01" required></div>
+        <div><label class="block text-sm font-semibold text-slate-300 mb-2">Net Balance (RM)</label><input type="number" id="debtor-balance" class="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-slate-400 text-sm" readonly></div>
+        <div><label class="block text-sm font-semibold text-slate-300 mb-2">Repair Date *</label><input type="date" id="debtor-repair-date" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm" required></div>
+        <div><label class="block text-sm font-semibold text-slate-300 mb-2">Follow-up Date</label><input type="date" id="debtor-followup-date" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm"></div>
+        <div class="md:col-span-2"><label class="block text-sm font-semibold text-slate-300 mb-2">Notes</label><textarea id="debtor-notes" class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm" rows="2"></textarea></div>
+        <div><label class="block text-sm font-semibold text-slate-300 mb-2">Status</label><select id="debtor-status" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm"><option value="pending">Outstanding</option><option value="completed">Settled</option></select></div>
+        <div class="md:col-span-2 flex gap-4 mt-6">
+          <button type="submit" id="debtor-submit-btn" class="flex-1 bg-violet-600 hover:bg-violet-700 px-6 py-3.5 rounded-lg font-bold transition">Save Debtor</button> 
+          <button type="button" id="reset-debtor-form" class="flex-1 bg-slate-700 hover:bg-slate-600 px-6 py-3.5 rounded-lg font-bold transition">Clear</button>
+        </div>
+       </form>
+      </div>
+     </div>
+     
+     <div>
+       <div class="flex items-center justify-between mb-6 flex-wrap gap-4">
+        <h2 class="text-xl font-bold flex items-center gap-2"><i data-lucide="users" class="text-violet-400"></i> Active Debt Ledger</h2>
+        <div class="flex items-center gap-2">
+           <input type="text" id="debtor-search" class="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white w-48" placeholder="Search...">
+           <select id="debtor-month-smart-filter" class="px-3 py-1 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white"><option value="all">All Months</option><option value="01">Jan</option><option value="02">Feb</option><option value="03">Mar</option><option value="04">Apr</option><option value="05">May</option><option value="06">Jun</option><option value="07">Jul</option><option value="08">Aug</option><option value="09">Sep</option><option value="10">Oct</option><option value="11">Nov</option><option value="12">Dec</option></select>
+           <select id="debtor-year-smart-filter" class="px-3 py-1 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white"></select>
+        </div>
+       </div>
+       <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-800/20">
+        <table class="w-full text-sm border-collapse">
+         <thead>
+          <tr class="border-b border-slate-800 bg-slate-900/40 text-left">
+           <th class="px-4 py-3.5 text-slate-400 font-bold text-xs uppercase">Bill No</th>
+           <th class="px-4 py-3.5 text-slate-400 font-bold text-xs uppercase">Debtor Name</th>
+           <th class="px-4 py-3.5 text-slate-400 font-bold text-xs uppercase">Phone</th>
+           <th class="px-4 py-3.5 text-slate-400 font-bold text-xs uppercase text-right">Owed (RM)</th>
+           <th class="px-4 py-3.5 text-slate-400 font-bold text-xs uppercase text-right">Paid (RM)</th>
+           <th class="px-4 py-3.5 text-slate-400 font-bold text-xs uppercase text-right">Balance (RM)</th>
+           <th class="px-4 py-3.5 text-slate-400 font-bold text-xs uppercase">Repair Date</th>
+           <th class="px-4 py-3.5 text-slate-400 font-bold text-xs uppercase text-center">Status</th>
+           <th class="px-4 py-3.5 text-slate-400 font-bold text-xs uppercase text-center">Action</th>
+          </tr>
+         </thead>
+         <tbody id="debtor-table-body" class="divide-y divide-slate-800/80"></tbody>
+        </table>
+       </div>
+       <div class="flex items-center justify-between mt-6 flex-wrap gap-4">
+        <div class="text-slate-400 text-xs"><span id="debtor-records-info" class="font-medium">Showing 0 records</span></div>
+        <div class="flex gap-2">
+          <button type="button" id="debtor-prev-btn" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 px-4 py-2 rounded-lg text-xs font-semibold">Prev</button> 
+          <button type="button" id="debtor-next-btn" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 px-4 py-2 rounded-lg text-xs font-semibold">Next</button>
+        </div>
+       </div>
+     </div>
+    </div>
+
+    <div id="stock-tab-view" class="tab-content hidden space-y-8">
+     <div class="max-w-4xl mx-auto">
+      <div class="bg-slate-800/40 border border-slate-700/80 rounded-xl p-8 shadow-xl">
+       <h2 class="text-2xl font-bold mb-6 flex items-center gap-2 text-amber-500"><i data-lucide="package"></i> Stock Inventory Management</h2>
+       <form id="stock-form" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div><label class="block text-sm font-semibold text-slate-300 mb-2">Type *</label><select id="stock-type" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm" required><option value="IN">🟢 Stock IN</option><option value="OUT">🔴 Stock OUT</option></select></div>
+        <div><label class="block text-sm font-semibold text-slate-300 mb-2">Date *</label><input type="date" id="stock-date" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm" required></div>
+        <div><label class="block text-sm font-semibold text-slate-300 mb-2">Item *</label><input type="text" id="stock-item-name" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm" required></div>
+        <div><label class="block text-sm font-semibold text-slate-300 mb-2">Supplier</label><input type="text" id="stock-supplier" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm"></div>
+        <div><label class="block text-sm font-semibold text-slate-300 mb-2">Quantity *</label><input type="number" id="stock-qty" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm" required></div>
+        <div><label class="block text-sm font-semibold text-slate-300 mb-2">Unit Cost (RM) *</label><input type="number" id="stock-unit-cost" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm" step="0.01" required></div>
+        <div><label class="block text-sm font-semibold text-slate-300 mb-2">Reason *</label><input type="text" id="stock-reason" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm" required></div>
+        <div><label class="block text-sm font-semibold text-slate-300 mb-2">PIC *</label><input type="text" id="stock-pic" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm" required></div>
+        <div class="md:col-span-2"><label class="block text-sm font-semibold text-slate-300 mb-2">Notes</label><input type="text" id="stock-notes" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm"></div>
+        <div class="md:col-span-2 flex gap-4 mt-6">
+          <button type="submit" id="stock-submit-btn" class="flex-1 bg-amber-600 hover:bg-amber-700 px-6 py-3.5 rounded-lg font-bold transition">Log Inventory</button> 
+          <button type="button" id="reset-stock-form" class="flex-1 bg-slate-700 hover:bg-slate-600 px-6 py-3.5 rounded-lg font-bold transition">Clear</button>
+        </div>
+       </form>
+      </div>
+     </div>
+
+     <div>
+       <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+         <div class="bg-slate-800/60 p-4 rounded-xl flex justify-between"><div><span class="text-xs font-bold text-slate-400">TOTAL PARTS EXPENSES</span><h4 id="hud-stock-cost" class="text-lg font-black text-amber-500">RM 0.00</h4></div></div>
+         <div class="bg-slate-800/60 p-4 rounded-xl flex justify-between"><div><span class="text-xs font-bold text-slate-400">TOTAL RESTOCKED</span><h4 id="hud-stock-in" class="text-lg font-black text-emerald-400">0</h4></div></div>
+         <div class="bg-slate-800/60 p-4 rounded-xl flex justify-between"><div><span class="text-xs font-bold text-slate-400">TOTAL DISCARDED</span><h4 id="hud-stock-out" class="text-lg font-black text-rose-400">0</h4></div></div>
+         <div class="bg-slate-800/60 border border-blue-500/30 p-4 rounded-xl flex justify-between shadow-[0_0_15px_-3px_rgba(59,130,246,0.2)]"><div><span class="text-xs font-bold text-blue-400">NET REMAINING</span><h4 id="hud-stock-remain" class="text-lg font-black text-blue-400">0</h4></div></div>
+       </div>
+
+       <div class="mb-8 bg-slate-800/40 rounded-xl p-6 border border-slate-700/80">
+         <h3 class="text-sm font-bold text-blue-400 mb-3 flex items-center gap-2"><i data-lucide="layers" class="w-4 h-4"></i> Live Inventory Balance</h3>
+         <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-800/20 max-h-48 overflow-y-auto">
+          <table class="w-full text-sm border-collapse relative">
+           <thead class="sticky top-0 z-10"><tr class="border-b border-slate-800 bg-slate-900/90 text-left backdrop-blur-sm"><th class="px-4 py-3 text-slate-400 font-bold text-xs uppercase">Item Name</th><th class="px-4 py-3 text-slate-400 font-bold text-xs uppercase text-center">Total In</th><th class="px-4 py-3 text-slate-400 font-bold text-xs uppercase text-center">Total Out</th><th class="px-4 py-3 text-slate-400 font-bold text-xs uppercase text-center">In Stock</th></tr></thead>
+           <tbody id="stock-balance-table-body" class="divide-y divide-slate-800/80"></tbody>
+          </table>
+         </div>
+       </div>
+
+       <div class="flex items-center justify-between mb-6 flex-wrap gap-4">
+        <h2 class="text-xl font-bold text-amber-500">Stock Ledger History</h2>
+        <div class="flex items-center gap-2">
+           <input type="text" id="stock-search" class="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white w-48" placeholder="Search item...">
+           <select id="stock-month-smart-filter" class="px-3 py-1 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white"><option value="all">All Months</option><option value="01">Jan</option><option value="02">Feb</option><option value="03">Mar</option><option value="04">Apr</option><option value="05">May</option><option value="06">Jun</option><option value="07">Jul</option><option value="08">Aug</option><option value="09">Sep</option><option value="10">Oct</option><option value="11">Nov</option><option value="12">Dec</option></select>
+           <select id="stock-year-smart-filter" class="px-3 py-1 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white"></select>
+        </div>
+       </div>
+
+       <div class="mb-8">
+         <h3 class="text-sm font-bold text-emerald-400 mb-3">🟢 Stock IN</h3>
+         <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-800/20">
+          <table class="w-full text-sm border-collapse">
+           <thead><tr class="border-b border-slate-800 bg-slate-900/40 text-left"><th class="px-4 py-3.5 text-slate-400 font-bold text-xs uppercase">Date</th><th class="px-4 py-3.5 text-slate-400 font-bold text-xs uppercase">Item</th><th class="px-4 py-3.5 text-slate-400 font-bold text-xs uppercase text-center">Qty</th><th class="px-4 py-3.5 text-slate-400 font-bold text-xs uppercase text-right">Cost</th><th class="px-4 py-3.5 text-slate-400 font-bold text-xs uppercase text-center">Action</th></tr></thead>
+           <tbody id="stock-in-table-body" class="divide-y divide-slate-800/80"></tbody>
+          </table>
+         </div>
+         <div class="flex justify-between mt-3 text-xs text-slate-400"><span id="stock-in-records-info">Showing 0 records</span><div><button id="stock-in-prev-btn" class="mr-2">Prev</button><button id="stock-in-next-btn">Next</button></div></div>
+       </div>
+
+       <div>
+         <h3 class="text-sm font-bold text-rose-400 mb-3">🔴 Stock OUT</h3>
+         <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-800/20">
+          <table class="w-full text-sm border-collapse">
+           <thead><tr class="border-b border-slate-800 bg-slate-900/40 text-left"><th class="px-4 py-3.5 text-slate-400 font-bold text-xs uppercase">Date</th><th class="px-4 py-3.5 text-slate-400 font-bold text-xs uppercase">Item</th><th class="px-4 py-3.5 text-slate-400 font-bold text-xs uppercase text-center">Qty</th><th class="px-4 py-3.5 text-slate-400 font-bold text-xs uppercase text-right">Cost</th><th class="px-4 py-3.5 text-slate-400 font-bold text-xs uppercase text-center">Action</th></tr></thead>
+           <tbody id="stock-out-table-body" class="divide-y divide-slate-800/80"></tbody>
+          </table>
+         </div>
+         <div class="flex justify-between mt-3 text-xs text-slate-400"><span id="stock-out-records-info">Showing 0 records</span><div><button id="stock-out-prev-btn" class="mr-2">Prev</button><button id="stock-out-next-btn">Next</button></div></div>
+       </div>
+     </div>
+    </div>
+
+    <div id="commission-tab-view" class="tab-content hidden space-y-8">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="bg-slate-800/40 border border-slate-700/80 rounded-xl p-6 shadow-xl h-fit">
+          <h3 class="text-md font-bold text-violet-400 mb-4">Log Tech Payout</h3>
+          <form id="payout-form" class="space-y-4">
+            <div><label class="block text-xs text-slate-400 mb-2">Technician *</label><input type="text" id="payout-tech" class="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-white" required></div>
+            <div><label class="block text-xs text-slate-400 mb-2">Date *</label><input type="date" id="payout-date" class="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-white" required></div>
+            <div><label class="block text-sm text-slate-300 mb-2">Amount (RM) *</label><input type="number" id="payout-amount" class="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-white" step="0.01" required></div>
+            <div><label class="block text-xs text-slate-400 mb-2">Note</label><input type="text" id="payout-notes" class="w-full px-4 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-white"></div>
+            <button type="submit" class="w-full bg-violet-600 hover:bg-violet-700 font-bold py-2.5 rounded-lg text-xs transition">Commit Payout</button>
+          </form>
+        </div>
+
+        <div class="lg:col-span-2 bg-slate-800/40 border border-slate-700/80 rounded-xl p-6">
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-2xl font-black text-violet-400">Earnings Ledger</h2>
+            <div class="flex gap-2">
+              <select id="commission-month-smart-filter" class="px-3 py-1 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white"><option value="all">All Months</option><option value="01">Jan</option><option value="02">Feb</option><option value="03">Mar</option><option value="04">Apr</option><option value="05">May</option><option value="06">Jun</option><option value="07">Jul</option><option value="08">Aug</option><option value="09">Sep</option><option value="10">Oct</option><option value="11">Nov</option><option value="12">Dec</option></select>
+              <select id="commission-year-smart-filter" class="px-3 py-1 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white"></select>
+            </div>
+          </div>
+          <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-800/20">
+            <table class="w-full text-sm border-collapse">
+              <thead>
+               <tr class="border-b border-slate-800 bg-slate-900/40 text-left"><th class="px-4 py-3.5 text-slate-400 font-bold text-xs uppercase">Technician</th><th class="px-4 py-3.5 text-slate-400 font-bold text-xs uppercase text-right">Total Case</th><th class="px-4 py-3.5 text-slate-400 font-bold text-xs uppercase text-right">Need Payment</th><th class="px-4 py-3.5 text-slate-400 font-bold text-xs uppercase text-right">Done Payment</th></tr>
+              </thead>
+              <tbody id="commission-table-body" class="divide-y divide-slate-800/80"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="bg-slate-800/40 border border-slate-700/80 rounded-xl p-6 mt-6">
+        <h3 class="text-md font-bold uppercase text-slate-300 mb-4">Historical Payout Ledger</h3>
+        <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-800/20">
+          <table class="w-full text-sm border-collapse">
+            <thead><tr class="border-b border-slate-800 bg-slate-900/40 text-left"><th class="px-4 py-3 text-slate-400 font-bold text-xs uppercase">Date</th><th class="px-4 py-3 text-slate-400 font-bold text-xs uppercase">Tech</th><th class="px-4 py-3 text-slate-400 font-bold text-xs uppercase text-right">Amount</th><th class="px-4 py-3 text-slate-400 font-bold text-xs uppercase text-center">Action</th></tr></thead>
+            <tbody id="payout-history-table-body" class="divide-y divide-slate-800/80"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div id="overhead-tab-view" class="tab-content hidden space-y-8">
+      <div class="max-w-4xl mx-auto">
+        <div class="bg-slate-800/40 border border-slate-700/80 rounded-xl p-8 shadow-xl">
+          <h2 class="text-2xl font-bold mb-6 flex items-center gap-2 text-amber-500"><i data-lucide="building-2"></i> Overhead Costs</h2>
+          <form id="overhead-form" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div><label class="block text-sm font-semibold text-slate-300 mb-2">Date *</label><input type="date" id="overhead-date" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm" required></div>
+            <div><label class="block text-sm font-semibold text-slate-300 mb-2">Category *</label><select id="overhead-category" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm" required><option value="Rent">Rent</option><option value="Utilities">Utilities</option><option value="Salaries">Salaries</option><option value="Marketing">Marketing</option><option value="Tools">Tools</option><option value="Others">Others</option></select></div>
+            <div><label class="block text-sm font-semibold text-slate-300 mb-2">Description *</label><input type="text" id="overhead-desc" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm" required></div>
+            <div><label class="block text-sm font-semibold text-slate-300 mb-2">Amount (RM) *</label><input type="number" id="overhead-amount" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm" step="0.01" required></div>
+            <div class="md:col-span-2"><label class="block text-sm font-semibold text-slate-300 mb-2">Notes</label><input type="text" id="overhead-notes" class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white text-sm"></div>
+            <div class="md:col-span-2 flex gap-4 mt-6"><button type="submit" id="overhead-submit-btn" class="flex-1 bg-amber-600 hover:bg-amber-700 px-6 py-3.5 rounded-lg font-bold transition">Record Expense</button><button type="button" id="reset-overhead-form" class="flex-1 bg-slate-700 hover:bg-slate-600 px-6 py-3.5 rounded-lg font-bold transition">Clear</button></div>
+          </form>
+        </div>
+      </div>
+      <div>
+        <div class="flex items-center justify-between mb-6 flex-wrap gap-4">
+         <h2 class="text-xl font-bold text-amber-500">Expenses Ledger</h2>
+         <div class="flex items-center gap-2">
+           <input type="text" id="overhead-search" class="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white w-48" placeholder="Search...">
+           <select id="overhead-month-smart-filter" class="px-3 py-1 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white"><option value="all">All Months</option><option value="01">Jan</option><option value="02">Feb</option><option value="03">Mar</option><option value="04">Apr</option><option value="05">May</option><option value="06">Jun</option><option value="07">Jul</option><option value="08">Aug</option><option value="09">Sep</option><option value="10">Oct</option><option value="11">Nov</option><option value="12">Dec</option></select>
+           <select id="overhead-year-smart-filter" class="px-3 py-1 bg-slate-800 border border-slate-700 rounded-lg text-xs text-white"></select>
+         </div>
+        </div>
+        <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-800/20">
+          <table class="w-full text-sm border-collapse">
+            <thead><tr class="border-b border-slate-800 bg-slate-900/40 text-left"><th class="px-4 py-3.5 text-slate-400 font-bold text-xs uppercase">Date</th><th class="px-4 py-3.5 text-slate-400 font-bold text-xs uppercase">Category</th><th class="px-4 py-3.5 text-slate-400 font-bold text-xs uppercase text-right">Amount (RM)</th><th class="px-4 py-3.5 text-slate-400 font-bold text-xs uppercase text-center">Action</th></tr></thead>
+            <tbody id="overhead-table-body" class="divide-y divide-slate-800/80"></tbody>
+          </table>
+        </div>
+        <div class="flex justify-between mt-6"><span id="overhead-records-info" class="text-xs text-slate-400">Showing 0 records</span><div><button id="overhead-prev-btn" class="bg-slate-800 px-4 py-2 text-xs mr-2 rounded">Prev</button><button id="overhead-next-btn" class="bg-slate-800 px-4 py-2 text-xs rounded">Next</button></div></div>
+      </div>
+    </div>
+
+    <div id="sync-tab-view" class="tab-content hidden">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="lg:col-span-1 bg-slate-800/40 border border-slate-700/80 rounded-xl p-6 shadow-xl space-y-6">
+          <h2 class="text-xl font-bold flex items-center gap-2"><i data-lucide="cloud" class="text-blue-500"></i> Cloud Configuration</h2>
+          <p class="text-slate-400 text-xs">Save your Web App URL here.</p>
+          <div class="space-y-4">
+            <input type="url" id="sheet-endpoint-url" class="w-full px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg text-xs font-mono text-white" placeholder="https://script.google.com/macros/s/.../exec">
+            <button type="button" id="save-endpoint-btn" class="w-full bg-blue-600 hover:bg-blue-700 py-3 rounded-lg text-xs font-bold transition flex justify-center gap-2"><i data-lucide="save" class="w-4 h-4"></i> Save Connection URL</button>
+            <button type="button" id="disconnect-endpoint-btn" class="w-full bg-slate-800 hover:bg-slate-700 py-3 rounded-lg text-xs font-bold transition flex justify-center gap-2"><i data-lucide="unlink" class="w-4 h-4"></i> Disconnect</button>
+          </div>
+          <div class="border-t border-slate-800 pt-6 space-y-3">
+            <button type="button" id="manual-pull-btn" class="w-full bg-slate-900 hover:bg-slate-800 py-2.5 rounded-lg text-xs font-semibold" disabled>Force Download</button>
+            <button type="button" id="manual-push-btn" class="w-full bg-slate-900 hover:bg-slate-800 py-2.5 rounded-lg text-xs font-semibold" disabled>Force Upload</button>
+          </div>
+        </div>
+
+        <div class="lg:col-span-2 bg-slate-800/40 border border-slate-700/80 rounded-xl p-8 shadow-xl">
+          <h2 class="text-2xl font-bold mb-4">Installation Guide</h2>
+          <p class="text-slate-400 text-sm mb-4">Ensure your Google Script matches the structure below, and you deploy it with "Execute as Me" and "Who has access: Anyone".</p>
+          <button type="button" id="copy-script-btn" class="text-blue-400 hover:text-white text-xs mb-2 transition">Copy Script Code</button>
+          <pre class="bg-slate-900 border border-slate-700/80 rounded-lg p-4 font-mono text-[10px] text-slate-300 max-h-40 overflow-y-auto" id="sheet-script-code">
+const SHEET_ID = "PASTE_YOUR_SHEET_ID_HERE";
+function doGet() {
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+  const data = {};
+  const sheets = ["Sales", "Warranty", "Debtors", "StockCount", "Overheads", "Payouts"];
+  sheets.forEach(name => {
+    let sheet = ss.getSheetByName(name);
+    if (!sheet) sheet = ss.insertSheet(name);
+    const values = sheet.getDataRange().getDisplayValues();
+    if (values.length <= 1) { data[name] = []; } else {
+      const headers = values[0];
+      data[name] = values.slice(1).map(row => {
+        const obj = {}; headers.forEach((h, i) => { obj[h] = row[i]; }); return obj;
+      });
+    }
+  });
+  return ContentService.createTextOutput(JSON.stringify({ status: "success", data })).setMimeType(ContentService.MimeType.JSON);
+}
+function doPost(e) {
+  try {
+    const payload = JSON.parse(e.postData.contents);
+    const ss = SpreadsheetApp.openById(SHEET_ID);
+    for (const sheetName in payload) {
+      let sheet = ss.getSheetByName(sheetName);
+      if (!sheet) sheet = ss.insertSheet(sheetName);
+      sheet.clear();
+      const records = payload[sheetName];
+      if (records.length > 0) {
+        const headers = Object.keys(records[0]); sheet.appendRow(headers);
+        const rows = records.map(rec => headers.map(h => rec[h] !== undefined ? rec[h] : ""));
+        sheet.getRange(2, 1, rows.length, headers.length).setValues(rows);
+      }
+    }
+    return ContentService.createTextOutput(JSON.stringify({ status: "success" })).setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({ status: "error", message: err.toString() })).setMimeType(ContentService.MimeType.JSON);
+  }
+}</pre>
+        </div>
+      </div>
+    </div>
+
+   </div>
+  </div>
+
+  <script>
+    // ==========================================
+    // SYSTEM MEMORY & STATE
+    // ==========================================
+    const SYSTEM_PASSWORD = "admin"; 
+
+    let sales = []; let warrantyClaims = []; let debtors = []; 
+    let stockRecords = []; let overheads = []; let payouts = []; 
+    
+    let sheetEndpoint = localStorage.getItem('rexstop_sheet_url') || "";
+    let isManualCommission = false;
+
+    let editingSalesBillNo = null; let editingWarrantyIdx = null; let editingDebtorBillNo = null;
+    let editingStockIdx = null; let editingOverheadIdx = null;
+    let salesSortOrder = 'desc'; 
+
+    var salesCurrentPage = 1; var warrantyCurrentPage = 1; var debtorCurrentPage = 1;
+    var stockInCurrentPage = 1; var stockOutCurrentPage = 1; var overheadCurrentPage = 1; var commissionCurrentPage = 1;
+    
+    const itemsPerPage = 10; let revenueChart = null; let deleteTarget = { type: null, id: null };
+
+    window.addEventListener('DOMContentLoaded', () => { initAuth(); });
+
+    function initAuth() {
+      const authScreen = document.getElementById('auth-screen');
+      const authForm = document.getElementById('auth-form');
+      const authInput = document.getElementById('auth-password');
+      const authError = document.getElementById('auth-error');
+
+      if (sessionStorage.getItem('rexstop_authenticated') === 'true') {
+        authScreen.classList.add('hidden'); initializeApp();
+      } else {
+        authForm.addEventListener('submit', (e) => {
+          e.preventDefault();
+          if (authInput.value === SYSTEM_PASSWORD) {
+            sessionStorage.setItem('rexstop_authenticated', 'true');
+            authScreen.classList.add('opacity-0');
+            setTimeout(() => { authScreen.classList.add('hidden'); initializeApp(); }, 500); 
+          } else {
+            authError.classList.remove('hidden'); authInput.value = ''; authInput.focus();
+          }
+        });
+      }
+    }
+
+    function initializeApp() {
+      generateDynamicYears(); safeCreateIcons(); initTabs();
+      initFormCalculations(); initFormSubmissions(); initSearchAndFilters(); initEndpointSyncUI();
+      
+      document.getElementById('cancel-delete-btn').addEventListener('click', () => {
+        document.getElementById('delete-modal').classList.add('hidden'); document.getElementById('delete-modal').classList.remove('flex');
+      });
+
+      document.getElementById('confirm-delete-btn').addEventListener('click', () => {
+        const { type, id } = deleteTarget;
+        if (type === 'sales') { sales = sales.filter(s => String(s.billNo || s["'billNo"] || '') !== id); showToast(`Transaction deleted.`); }
+        else if (type === 'warranty') { const c = warrantyClaims[id]; if (c && c.loss > 0) { const sIdx = sales.findIndex(s => String(s.billNo || s["'billNo"] || '') === String(c.billNo)); if (sIdx !== -1) { sales[sIdx].loss = Math.max(0, (sales[sIdx].loss || 0) - c.loss); sales[sIdx].netProfit = sales[sIdx].sales - sales[sIdx].cost - sales[sIdx].commission - sales[sIdx].loss; } } warrantyClaims.splice(id, 1); showToast("Warranty deleted."); }
+        else if (type === 'debtor') { debtors = debtors.filter(d => String(d.billNo || d["'billNo"] || '') !== id); showToast("Debtor deleted."); }
+        else if (type === 'stock') { stockRecords.splice(id, 1); showToast("Stock record deleted."); }
+        else if (type === 'overhead') { overheads.splice(id, 1); showToast("Overhead deleted."); }
+        else if (type === 'payout') { payouts.splice(id, 1); showToast("Payout deleted."); }
+        
+        updateAllUI(); document.getElementById('delete-modal').classList.add('hidden'); document.getElementById('delete-modal').classList.remove('flex'); autoSyncPush();
+      });
+      
+      if (sheetEndpoint) {
+        showToast("Connecting to Google Sheets Database...", true);
+        document.getElementById('status-text').innerText = "Syncing with Cloud Database...";
+        document.getElementById('status-dot').className = "w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse";
+        syncDataPull();
+      } else {
+        showToast("Please configure your Google Sheets Web App URL."); switchTab('tab-sync');
+      }
+      updateAllUI();
+    }
+
+    function formatDateUI(dateStr) {
+      if (!dateStr) return '-'; const parts = String(dateStr).split('-');
+      if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`; return dateStr;
+    }
+
+    function getNextBillNo() {
+      if (!sales || sales.length === 0) return "0001";
+      let maxNum = 0;
+      sales.forEach(s => {
+        const rawBill = String(s.billNo || s["'billNo"] || ''); const numPart = rawBill.replace(/\D/g, ''); 
+        if (numPart) { const num = parseInt(numPart, 10); if (num > maxNum) maxNum = num; }
+      });
+      return String(maxNum === 0 ? 1 : maxNum + 1).padStart(4, '0');
+    }
+
+    function generateDynamicYears() {
+      const cy = new Date().getFullYear();
+      ['sales','warranty','debtor','stock','commission','overhead'].forEach(prefix => {
+        const sel = document.getElementById(`${prefix}-year-smart-filter`);
+        if(sel) { sel.innerHTML = '<option value="all">All Years</option>'; for(let y=2024; y<=cy+15; y++) { sel.innerHTML += `<option value="${y}" ${y===cy?'selected':''}>${y}</option>`; } }
+      });
+    }
+
+    function safeCreateIcons() { try { if (typeof lucide !== 'undefined') lucide.createIcons(); } catch(e){} }
+    function smoothScrollToTop() { document.getElementById('main-scroll-container').scrollTo({ top: 0, behavior: 'smooth' }); }
+    function openDeleteModal(type, id) { deleteTarget = { type, id }; document.getElementById('delete-modal').classList.remove('hidden'); document.getElementById('delete-modal').classList.add('flex'); }
+
+    function initTabs() {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.addEventListener('click', () => switchTab(btn.id)));
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('border-blue-500', 'text-blue-400', 'bg-slate-800/40'); b.classList.add('border-transparent', 'text-slate-400'); });
+      document.querySelectorAll('.tab-content').forEach(c => { c.classList.add('hidden'); c.classList.remove('block'); });
+      document.getElementById(tabId).classList.remove('border-transparent', 'text-slate-400'); document.getElementById(tabId).classList.add('border-blue-500', 'text-blue-400', 'bg-slate-800/40');
+      const targetMap = { 'tab-dashboard': 'dashboard-tab', 'tab-entry': 'entry-tab', 'tab-warranty': 'warranty-tab-view', 'tab-debtor': 'debtor-tab-view', 'tab-stock': 'stock-tab-view', 'tab-commission': 'commission-tab-view', 'tab-overhead': 'overhead-tab-view', 'tab-sync': 'sync-tab-view' };
+      document.getElementById(targetMap[tabId]).classList.remove('hidden'); document.getElementById(targetMap[tabId]).classList.add('block');
+      if (tabId === 'tab-dashboard') setTimeout(renderChart, 50);
+      if (tabId === 'tab-entry' && !editingSalesBillNo) document.getElementById('form-billno').value = getNextBillNo();
+    }
+
+    function initFormCalculations() {
+      const sIn=document.getElementById('form-sales'), cIn=document.getElementById('form-cost'), pIn=document.getElementById('form-profit'), cmIn=document.getElementById('form-commission'), lIn=document.getElementById('form-loss'), npIn=document.getElementById('form-net-profit');
+      const calc = (autoComm) => {
+        const gp = (parseFloat(sIn.value)||0) - (parseFloat(cIn.value)||0); pIn.value = gp.toFixed(2);
+        if(autoComm && !isManualCommission) cmIn.value = Math.max(0, gp * 0.20).toFixed(2);
+        npIn.value = (gp - (parseFloat(cmIn.value)||0) - (parseFloat(lIn.value)||0)).toFixed(2);
+      };
+      sIn.addEventListener('input', ()=>calc(true)); cIn.addEventListener('input', ()=>calc(true));
+      cmIn.addEventListener('input', ()=>{ isManualCommission=true; calc(false); });
+
+      const dTot=document.getElementById('debtor-total'), dPd=document.getElementById('debtor-paid'), dBal=document.getElementById('debtor-balance');
+      const calcDbt = () => dBal.value = ((parseFloat(dTot.value)||0) - (parseFloat(dPd.value)||0)).toFixed(2);
+      dTot.addEventListener('input', calcDbt); dPd.addEventListener('input', calcDbt);
+
+      const wBill=document.getElementById('warranty-billno'), wStat=document.getElementById('warranty-autofill-status');
+      wBill.addEventListener('input', () => {
+        const ex = sales.find(s => String(s.billNo||s["'billNo"]||'').toUpperCase() === wBill.value.trim().toUpperCase());
+        if(ex) { document.getElementById('warranty-name').value=ex.name||''; document.getElementById('warranty-phone').value=ex.phone||''; document.getElementById('warranty-model').value=ex.model||''; document.getElementById('warranty-item').value=ex.item||''; wStat.innerText = `Matched: ${ex.name}`; wStat.className = "text-[10px] text-emerald-400 mt-1 block"; } else wStat.innerText="";
+      });
+      const dbBill=document.getElementById('debtor-billno'), dbStat=document.getElementById('debtor-autofill-status');
+      dbBill.addEventListener('input', () => {
+        const ex = sales.find(s => String(s.billNo||s["'billNo"]||'').toUpperCase() === dbBill.value.trim().toUpperCase());
+        if(ex) { document.getElementById('debtor-name').value=ex.name||''; document.getElementById('debtor-phone').value=ex.phone||''; document.getElementById('debtor-total').value=ex.sales||0; document.getElementById('debtor-paid').value=0; dBal.value=(parseFloat(ex.sales)||0).toFixed(2); dbStat.innerText = `Matched: RM${ex.sales}`; dbStat.className = "text-[10px] text-emerald-400 mt-1 block"; } else dbStat.innerText="";
+      });
+    }
+
+    function initFormSubmissions() {
+      document.getElementById('sales-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const rec = { billNo: document.getElementById('form-billno').value.trim().toUpperCase(), date: document.getElementById('form-date').value, name: document.getElementById('form-name').value.trim(), phone: document.getElementById('form-phone').value.trim(), model: document.getElementById('form-model').value.trim(), item: document.getElementById('form-item').value.trim(), PIC: document.getElementById('form-pic').value.trim(), supplier: document.getElementById('form-supplier').value.trim(), sales: parseFloat(document.getElementById('form-sales').value)||0, cost: parseFloat(document.getElementById('form-cost').value)||0, loss: parseFloat(document.getElementById('form-loss').value)||0, commission: parseFloat(document.getElementById('form-commission').value)||0, netProfit: parseFloat(document.getElementById('form-net-profit').value)||0, note: document.getElementById('form-note').value.trim() };
+        if (editingSalesBillNo) { const idx = sales.findIndex(s => String(s.billNo||s["'billNo"]||'') === editingSalesBillNo); if(idx!==-1) sales[idx]=rec; else sales.unshift(rec); showToast(`Updated ${rec.billNo}!`); } 
+        else { const idx = sales.findIndex(s => String(s.billNo||s["'billNo"]||'') === rec.billNo); if(idx!==-1) sales[idx]=rec; else sales.unshift(rec); showToast(`Added ${rec.billNo}!`); }
+        updateAllUI(); document.getElementById('sales-form').reset(); isManualCommission = false; editingSalesBillNo = null; document.getElementById('form-billno').value = getNextBillNo(); switchTab('tab-dashboard'); smoothScrollToTop(); autoSyncPush();
+      });
+      document.getElementById('reset-form-btn').addEventListener('click', () => { document.getElementById('sales-form').reset(); isManualCommission = false; editingSalesBillNo = null; document.getElementById('form-billno').value = getNextBillNo(); });
+
+      document.getElementById('warranty-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const obj = { billNo: document.getElementById('warranty-billno').value.trim().toUpperCase(), date: document.getElementById('warranty-date').value, name: document.getElementById('warranty-name').value.trim(), phone: document.getElementById('warranty-phone').value.trim(), model: document.getElementById('warranty-model').value.trim(), item: document.getElementById('warranty-item').value.trim(), supplier: document.getElementById('warranty-supplier').value.trim(), status: document.getElementById('warranty-status').value, cost: parseFloat(document.getElementById('warranty-cost').value)||0, loss: parseFloat(document.getElementById('warranty-loss').value)||0, notes: document.getElementById('warranty-notes').value.trim() };
+        if (editingWarrantyIdx !== null) { const old = warrantyClaims[editingWarrantyIdx]; if (old && old.loss>0) { const sIdx = sales.findIndex(s => String(s.billNo||s["'billNo"]||'') === String(old.billNo)); if (sIdx!==-1) { sales[sIdx].loss = Math.max(0, (sales[sIdx].loss||0)-old.loss); sales[sIdx].netProfit = sales[sIdx].sales - sales[sIdx].cost - sales[sIdx].commission - sales[sIdx].loss; } } warrantyClaims[editingWarrantyIdx] = obj; showToast("Warranty updated."); } 
+        else { warrantyClaims.unshift(obj); showToast("Warranty recorded."); }
+        if (obj.loss>0) { const sIdx = sales.findIndex(s => String(s.billNo||s["'billNo"]||'') === obj.billNo); if (sIdx!==-1) { sales[sIdx].loss = (parseFloat(sales[sIdx].loss)||0) + obj.loss; sales[sIdx].netProfit = sales[sIdx].sales - sales[sIdx].cost - sales[sIdx].commission - sales[sIdx].loss; } }
+        updateAllUI(); document.getElementById('warranty-form').reset(); document.getElementById('warranty-autofill-status').innerText=""; editingWarrantyIdx=null; switchTab('tab-dashboard'); smoothScrollToTop(); autoSyncPush();
+      });
+      document.getElementById('reset-warranty-form').addEventListener('click', () => { document.getElementById('warranty-form').reset(); document.getElementById('warranty-autofill-status').innerText=""; editingWarrantyIdx=null; });
+
+      document.getElementById('debtor-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const obj = { billNo: document.getElementById('debtor-billno').value.trim().toUpperCase(), name: document.getElementById('debtor-name').value.trim(), phone: document.getElementById('debtor-phone').value.trim(), total: parseFloat(document.getElementById('debtor-total').value)||0, paid: parseFloat(document.getElementById('debtor-paid').value)||0, balance: parseFloat(document.getElementById('debtor-balance').value)||0, repairDate: document.getElementById('debtor-repair-date').value, followupDate: document.getElementById('debtor-followup-date').value, notes: document.getElementById('debtor-notes').value.trim(), status: document.getElementById('debtor-status').value };
+        if (editingDebtorBillNo) { const idx = debtors.findIndex(d => String(d.billNo||d["'billNo"]||'') === editingDebtorBillNo); if(idx!==-1) debtors[idx]=obj; else debtors.unshift(obj); showToast("Debtor updated."); } 
+        else { const idx = debtors.findIndex(d => String(d.billNo||d["'billNo"]||'') === obj.billNo); if(idx!==-1) debtors[idx]=obj; else { debtors.unshift(obj); showToast("Debtor logged."); } }
+        updateAllUI(); document.getElementById('debtor-form').reset(); document.getElementById('debtor-autofill-status').innerText=""; editingDebtorBillNo=null; smoothScrollToTop(); autoSyncPush();
+      });
+      document.getElementById('reset-debtor-form').addEventListener('click', () => { document.getElementById('debtor-form').reset(); document.getElementById('debtor-autofill-status').innerText=""; editingDebtorBillNo=null; });
+
+      document.getElementById('stock-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const qty = parseInt(document.getElementById('stock-qty').value)||0; const cost = parseFloat(document.getElementById('stock-unit-cost').value)||0;
+        const obj = { type: document.getElementById('stock-type').value, date: document.getElementById('stock-date').value, item: document.getElementById('stock-item-name').value.trim(), supplier: document.getElementById('stock-supplier').value.trim(), qty: qty, cost: cost, total: qty*cost, reason: document.getElementById('stock-reason').value.trim(), PIC: document.getElementById('stock-pic').value.trim(), notes: document.getElementById('stock-notes').value.trim() };
+        if (editingStockIdx !== null) { stockRecords[editingStockIdx] = obj; showToast("Stock updated."); } else { stockRecords.unshift(obj); showToast("Stock logged."); }
+        updateAllUI(); document.getElementById('stock-form').reset(); editingStockIdx=null; smoothScrollToTop(); autoSyncPush();
+      });
+      document.getElementById('reset-stock-form').addEventListener('click', () => { document.getElementById('stock-form').reset(); editingStockIdx=null; });
+
+      document.getElementById('overhead-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const obj = { date: document.getElementById('overhead-date').value, category: document.getElementById('overhead-category').value, desc: document.getElementById('overhead-desc').value.trim(), amount: parseFloat(document.getElementById('overhead-amount').value)||0, notes: document.getElementById('overhead-notes').value.trim() };
+        if (editingOverheadIdx !== null) { overheads[editingOverheadIdx] = obj; showToast("Expense updated."); } else { overheads.unshift(obj); showToast("Expense logged."); }
+        updateAllUI(); document.getElementById('overhead-form').reset(); editingOverheadIdx=null; smoothScrollToTop(); autoSyncPush();
+      });
+      document.getElementById('reset-overhead-form').addEventListener('click', () => { document.getElementById('overhead-form').reset(); editingOverheadIdx=null; });
+
+      document.getElementById('payout-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const t = document.getElementById('payout-tech').value.trim(); const d = document.getElementById('payout-date').value; const a = parseFloat(document.getElementById('payout-amount').value)||0; const n = document.getElementById('payout-notes').value.trim();
+        payouts.unshift({ tech:t, date:d, amount:a, notes:n }); showToast(`Logged RM ${a.toFixed(2)} payout to ${t}`);
+        document.getElementById('payout-form').reset(); updateAllUI(); autoSyncPush();
+      });
+    }
+
+    function initSearchAndFilters() {
+      document.getElementById('graph-period').addEventListener('change', renderChart);
+      document.getElementById('sales-sort-btn').addEventListener('click', () => { salesSortOrder = salesSortOrder === 'desc' ? 'asc' : 'desc'; document.getElementById('sales-sort-text').innerText = salesSortOrder === 'desc' ? 'Sort: Newest' : 'Sort: Oldest'; salesCurrentPage = 1; updateSalesTable(); });
+      document.getElementById('sales-search').addEventListener('input', () => { salesCurrentPage=1; updateSalesTable(); });
+      document.getElementById('stock-search').addEventListener('input', () => { stockInCurrentPage=1; stockOutCurrentPage=1; updateStockOutTable(); });
+      document.getElementById('overhead-search').addEventListener('input', () => { overheadCurrentPage=1; updateOverheadTable(); });
+      document.getElementById('debtor-search').addEventListener('input', () => { debtorCurrentPage=1; updateDebtorTable(); });
+      
+      // ADDED: Warranty Status filter instantly reloads table without needing page refresh
+      document.getElementById('warranty-status-filter').addEventListener('change', () => { warrantyCurrentPage=1; updateWarrantyTable(); });
+
+      ['sales','warranty','debtor','stock','overhead','commission'].forEach(p => {
+        document.getElementById(`${p}-month-smart-filter`).addEventListener('change', () => { window[`${p==='stock'?'stockIn':p}CurrentPage`]=1; updateAllUI(); });
+        document.getElementById(`${p}-year-smart-filter`).addEventListener('change', () => { window[`${p==='stock'?'stockIn':p}CurrentPage`]=1; updateAllUI(); });
+      });
+
+      document.getElementById('sales-filter-btn')?.addEventListener('click', () => document.getElementById('sales-filter-panel').classList.toggle('hidden'));
+      document.getElementById('sales-clear-filter-btn')?.addEventListener('click', () => { document.getElementById('sales-search').value=""; document.getElementById('filter-bill').value=""; document.getElementById('filter-customer').value=""; document.getElementById('filter-tech').value=""; document.getElementById('filter-sales-date').value=""; document.getElementById('sales-month-smart-filter').value="all"; document.getElementById('sales-year-smart-filter').value=new Date().getFullYear(); salesCurrentPage=1; updateSalesTable(); });
+      document.getElementById('apply-sales-filter')?.addEventListener('click', () => { salesCurrentPage=1; updateSalesTable(); });
+      document.getElementById('reset-sales-filter')?.addEventListener('click', () => { document.getElementById('filter-bill').value=""; document.getElementById('filter-customer').value=""; document.getElementById('filter-tech').value=""; document.getElementById('filter-sales-date').value=""; salesCurrentPage=1; updateSalesTable(); });
+
+      document.getElementById('quick-view').addEventListener('change', () => {
+        const v = document.getElementById('quick-view').value; const now = new Date();
+        const f = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        if (v==='month') { document.getElementById('filter-start-date').value = f(new Date(now.getFullYear(), now.getMonth(), 1)); document.getElementById('filter-end-date').value = f(new Date(now.getFullYear(), now.getMonth()+1, 0)); }
+        else if (v==='year') { document.getElementById('filter-start-date').value = `${now.getFullYear()}-01-01`; document.getElementById('filter-end-date').value = `${now.getFullYear()}-12-31`; }
+        else { document.getElementById('filter-start-date').value = ""; document.getElementById('filter-end-date').value = ""; }
+      });
+      document.getElementById('apply-filter').addEventListener('click', () => { updateAllUI(); showToast("Filters updated!"); });
+      document.getElementById('clear-dashboard-filter').addEventListener('click', () => { document.getElementById('filter-start-date').value=""; document.getElementById('filter-end-date').value=""; document.getElementById('quick-view').value="all"; updateAllUI(); });
+
+      document.getElementById('sales-prev-btn').addEventListener('click', () => { if(salesCurrentPage>1){salesCurrentPage--; updateSalesTable();} }); document.getElementById('sales-next-btn').addEventListener('click', () => { salesCurrentPage++; updateSalesTable(); });
+      document.getElementById('warranty-prev-btn').addEventListener('click', () => { if(warrantyCurrentPage>1){warrantyCurrentPage--; updateWarrantyTable();} }); document.getElementById('warranty-next-btn').addEventListener('click', () => { warrantyCurrentPage++; updateWarrantyTable(); });
+      document.getElementById('debtor-prev-btn').addEventListener('click', () => { if(debtorCurrentPage>1){debtorCurrentPage--; updateDebtorTable();} }); document.getElementById('debtor-next-btn').addEventListener('click', () => { debtorCurrentPage++; updateDebtorTable(); });
+      document.getElementById('stock-in-prev-btn').addEventListener('click', () => { if(stockInCurrentPage>1){stockInCurrentPage--; updateStockOutTable();} }); document.getElementById('stock-in-next-btn').addEventListener('click', () => { stockInCurrentPage++; updateStockOutTable(); });
+      document.getElementById('stock-out-prev-btn').addEventListener('click', () => { if(stockOutCurrentPage>1){stockOutCurrentPage--; updateStockOutTable();} }); document.getElementById('stock-out-next-btn').addEventListener('click', () => { stockOutCurrentPage++; updateStockOutTable(); });
+      document.getElementById('overhead-prev-btn').addEventListener('click', () => { if(overheadCurrentPage>1){overheadCurrentPage--; updateOverheadTable();} }); document.getElementById('overhead-next-btn').addEventListener('click', () => { overheadCurrentPage++; updateOverheadTable(); });
+    }
+
+    function showToast(msg, isInfo=false) {
+        const t = document.getElementById('toast');
+        document.getElementById('toast-message').innerText = msg;
+        t.classList.remove('opacity-0', 'translate-y-10');
+        setTimeout(() => t.classList.add('opacity-0', 'translate-y-10'), 3000);
+    }
+
+    function updateAllUI() { updateDashboardData(); updateSalesTable(); updateWarrantyTable(); updateDebtorTable(); updateStockOutTable(); updateCommissionTable(); updateOverheadTable(); renderChart(); updateTopModels(); }
+
+    function updateTopModels() {
+      const tb = document.getElementById('top-models-body'); if(!tb) return;
+      const counts = {}; sales.forEach(s => { const m=String(s.model||'').trim(); if(m && m!=='-') counts[m]=(counts[m]||0)+1; });
+      const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,10);
+      tb.innerHTML = '';
+      if(sorted.length===0){ tb.innerHTML=`<tr><td colspan="3" class="px-4 py-8 text-center text-slate-500">No repair data yet.</td></tr>`; return; }
+      sorted.forEach(([m,c],i) => {
+        let rc = "text-slate-400 font-semibold"; if(i===0) rc="text-amber-400 font-black text-lg"; if(i===1) rc="text-slate-300 font-bold text-base"; if(i===2) rc="text-amber-700 font-bold text-base";
+        tb.innerHTML += `<tr class="border-b border-slate-800/50"><td class="px-4 py-3 ${rc} text-center">#${i+1}</td><td class="px-4 py-3 font-semibold">${m}</td><td class="px-4 py-3 text-right font-bold text-blue-400">${c}</td></tr>`;
+      });
+    }
+
+    function updateDashboardData() {
+      const sd = document.getElementById('filter-start-date').value; const ed = document.getElementById('filter-end-date').value;
+      const fDate = (ds) => { if(!sd && !ed) return true; const d=new Date(ds); if(sd && d<new Date(sd)) return false; if(ed && d>new Date(ed)) return false; return true; };
+      let ts=0, tc=0, tl=0, tnp=0, od=0, soc=0, toc=0;
+      sales.forEach(s => { if(fDate(s.date)){ ts+=parseFloat(s.sales)||0; tc+=parseFloat(s.cost)||0; tl+=parseFloat(s.loss)||0; tnp+=parseFloat(s.netProfit)||0; } });
+      debtors.forEach(d => { if(fDate(d.repairDate) && d.status==='pending') od+=parseFloat(d.balance)||0; });
+      stockRecords.forEach(st => { if(st.type==='OUT' && fDate(st.date)) soc+=parseFloat(st.total)||0; });
+      overheads.forEach(o => { if(fDate(o.date)) toc+=parseFloat(o.amount)||0; });
+      
+      document.getElementById('kpi-sales').innerText = `RM ${ts.toFixed(2)}`; document.getElementById('kpi-costs').innerText = `RM ${(tc+soc).toFixed(2)}`; document.getElementById('kpi-overheads').innerText = `RM ${toc.toFixed(2)}`;
+      document.getElementById('kpi-loss').innerText = `RM ${tl.toFixed(2)}`; document.getElementById('kpi-net-profit').innerText = `RM ${(tnp-soc-toc).toFixed(2)}`; document.getElementById('kpi-debt').innerText = `RM ${od.toFixed(2)}`;
+      document.getElementById('kpi-margin').innerText = `${ts>0?((tnp-soc-toc)/ts*100).toFixed(1):0}%`;
+    }
+
+    function matchesSmartDateFilter(ds, mVal, yVal) {
+      if(!ds) return true; const p=String(ds).split('-'); if(p.length>=3) return (mVal==='all'||p[1]===mVal) && (yVal==='all'||p[0]===yVal); return true;
+    }
+
+    function updateSalesTable() {
+      const tb=document.getElementById('sales-table-body'); tb.innerHTML='';
+      const sq=document.getElementById('sales-search').value.toLowerCase(), fb=document.getElementById('filter-bill')?.value.toLowerCase(), fc=document.getElementById('filter-customer')?.value.toLowerCase(), ft=document.getElementById('filter-tech')?.value.toLowerCase(), fd=document.getElementById('filter-sales-date')?.value, ms=document.getElementById('sales-month-smart-filter').value, ys=document.getElementById('sales-year-smart-filter').value;
+      
+      let fs = sales.filter(i => {
+        const b = String(i.billNo||i["'billNo"]||'').toLowerCase();
+        if(!matchesSmartDateFilter(i.date, ms, ys)) return false;
+        if(sq && !(b.includes(sq) || String(i.name||'').toLowerCase().includes(sq) || String(i.PIC||'').toLowerCase().includes(sq) || String(i.model||'').toLowerCase().includes(sq))) return false;
+        if(fb && !b.includes(fb)) return false; if(fc && !String(i.name||'').toLowerCase().includes(fc)) return false; if(ft && !String(i.PIC||'').toLowerCase().includes(ft)) return false; if(fd && i.date!==fd) return false;
+        return true;
+      }).sort((a,b) => salesSortOrder==='asc' ? String(a.billNo||'').localeCompare(String(b.billNo||''),undefined,{numeric:true}) : String(b.billNo||'').localeCompare(String(a.billNo||''),undefined,{numeric:true}));
+      
+      const tot = fs.length; const tPg = Math.ceil(tot/itemsPerPage)||1;
+      if(salesCurrentPage>tPg) salesCurrentPage=tPg; if(salesCurrentPage<1) salesCurrentPage=1;
+      const st = (salesCurrentPage-1)*itemsPerPage; const pData = fs.slice(st, st+itemsPerPage);
+      
+      document.getElementById('sales-records-info').innerHTML = `Showing ${tot>0?st+1:0} to ${Math.min(st+itemsPerPage, tot)} of ${tot}`;
+      document.getElementById('sales-prev-btn').disabled=salesCurrentPage===1; document.getElementById('sales-next-btn').disabled=salesCurrentPage===tPg;
+
+      if(pData.length===0){ tb.innerHTML=`<tr><td colspan="13" class="px-4 py-8 text-center text-slate-500">No records found.</td></tr>`; return; }
+      pData.forEach((i, idx) => {
+        const b = String(i.billNo||i["'billNo"]||'');
+        tb.innerHTML += `<tr class="border-b border-slate-800/80 hover:bg-slate-800/60 transition"><td class="px-5 py-4 text-xs font-bold text-slate-500">${st+idx+1}</td><td class="px-5 py-4 font-mono font-bold text-blue-400 text-xs">${b}</td><td class="px-5 py-4 text-xs text-slate-400">${formatDateUI(i.date)}</td><td class="px-5 py-4 font-bold">${i.name||'-'}</td><td class="px-5 py-4 text-xs">${i.PIC||'-'}</td><td class="px-5 py-4 text-xs">${i.model||'-'}</td><td class="px-5 py-4 text-xs truncate max-w-[150px]">${i.item||'-'}</td><td class="px-5 py-4 text-right font-mono">${(i.sales||0).toFixed(2)}</td><td class="px-5 py-4 text-right font-mono text-rose-400">${(i.cost||0).toFixed(2)}</td><td class="px-5 py-4 text-right font-mono text-red-500">${(i.loss||0).toFixed(2)}</td><td class="px-5 py-4 text-right font-mono text-amber-500">${(i.commission||0).toFixed(2)}</td><td class="px-5 py-4 text-right font-mono font-black text-emerald-400">${(i.netProfit||0).toFixed(2)}</td><td class="px-4 py-3 text-center flex gap-1 justify-center"><button onclick="editSalesRecord('${b.replace(/'/g,"\\'")}')" class="text-blue-400 font-bold px-2 py-1 rounded">Edit</button><button onclick="openDeleteModal('sales', '${b.replace(/'/g,"\\'")}')" class="text-red-500 font-bold px-2 py-1 rounded">Del</button></td></tr>`;
+      });
+    }
+
+    function updateWarrantyTable() {
+      const tb=document.getElementById('warranty-table-body'); tb.innerHTML='';
+      const sf=document.getElementById('warranty-status-filter').value, ms=document.getElementById('warranty-month-smart-filter').value, ys=document.getElementById('warranty-year-smart-filter').value;
+      let fw = warrantyClaims.filter(w => (sf==='all'||w.status===sf) && matchesSmartDateFilter(w.date, ms, ys));
+      const tot = fw.length; const tPg = Math.ceil(tot/itemsPerPage)||1;
+      if(warrantyCurrentPage>tPg) warrantyCurrentPage=tPg; if(warrantyCurrentPage<1) warrantyCurrentPage=1;
+      const st = (warrantyCurrentPage-1)*itemsPerPage; const pData = fw.slice(st, st+itemsPerPage);
+      document.getElementById('warranty-records-info').innerText = `Showing ${tot>0?st+1:0} to ${Math.min(st+itemsPerPage, tot)} of ${tot}`;
+      document.getElementById('warranty-prev-btn').disabled=warrantyCurrentPage===1; document.getElementById('warranty-next-btn').disabled=warrantyCurrentPage===tPg;
+      if(pData.length===0){ tb.innerHTML=`<tr><td colspan="8" class="px-4 py-8 text-center text-slate-500">No active warranty claims.</td></tr>`; return; }
+      pData.forEach(i => {
+        const oIdx = warrantyClaims.indexOf(i);
+        tb.innerHTML += `<tr class="border-b border-slate-800/50"><td class="px-4 py-3 text-xs">${formatDateUI(i.date)}</td><td class="px-4 py-3 font-mono font-bold text-blue-400 text-xs">${i.billNo||'-'}</td><td class="px-4 py-3">${i.name||'-'}</td><td class="px-4 py-3 text-xs font-bold">${i.model||'-'}</td><td class="px-4 py-3 text-right">${(i.cost||0).toFixed(2)}</td><td class="px-4 py-3 text-right text-red-500 font-bold">${(i.loss||0).toFixed(2)}</td><td class="px-4 py-3 text-center"><span class="px-2 py-1 text-[10px] font-bold rounded-full ${i.status==='completed'?'bg-emerald-500/20 text-emerald-400':'bg-blue-500/20 text-blue-400'}">${i.status==='completed'?'Resolved':'Pending'}</span></td><td class="px-4 py-3 text-center"><button onclick="editWarrantyRecord(${oIdx})" class="text-blue-400 mr-2">Edit</button><button onclick="toggleWarrantyStatus(${oIdx})" class="text-amber-500 mr-2">Stat</button><button onclick="openDeleteModal('warranty', ${oIdx})" class="text-red-500">Del</button></td></tr>`;
+      });
+    }
+
+    function updateDebtorTable() {
+      const tb=document.getElementById('debtor-table-body'); tb.innerHTML='';
+      const sv=document.getElementById('debtor-search').value.toLowerCase(), ms=document.getElementById('debtor-month-smart-filter').value, ys=document.getElementById('debtor-year-smart-filter').value;
+      let fd = debtors.filter(d => matchesSmartDateFilter(d.repairDate, ms, ys) && (!sv || String(d.name||'').toLowerCase().includes(sv) || String(d.billNo||'').toLowerCase().includes(sv)));
+      const tot = fd.length; const tPg = Math.ceil(tot/itemsPerPage)||1;
+      if(debtorCurrentPage>tPg) debtorCurrentPage=tPg; if(debtorCurrentPage<1) debtorCurrentPage=1;
+      const st = (debtorCurrentPage-1)*itemsPerPage; const pData = fd.slice(st, st+itemsPerPage);
+      document.getElementById('debtor-records-info').innerText = `Showing ${tot>0?st+1:0} to ${Math.min(st+itemsPerPage, tot)} of ${tot}`;
+      document.getElementById('debtor-prev-btn').disabled=debtorCurrentPage===1; document.getElementById('debtor-next-btn').disabled=debtorCurrentPage===tPg;
+      if(pData.length===0){ tb.innerHTML=`<tr><td colspan="11" class="px-4 py-8 text-center text-slate-500">No debtor profiles.</td></tr>`; return; }
+      pData.forEach(i => {
+        const b = String(i.billNo||i["'billNo"]||'');
+        tb.innerHTML += `<tr class="border-b border-slate-800/50"><td class="px-4 py-3 font-mono font-bold text-blue-400 text-xs">${b}</td><td class="px-4 py-3 font-semibold">${i.name||'-'}</td><td class="px-4 py-3 text-xs">${i.phone||'-'}</td><td class="px-4 py-3 text-right">${(i.total||0).toFixed(2)}</td><td class="px-4 py-3 text-right text-emerald-400">${(i.paid||0).toFixed(2)}</td><td class="px-4 py-3 text-right text-rose-400 font-bold">${(i.balance||0).toFixed(2)}</td><td class="px-4 py-3 text-xs">${formatDateUI(i.repairDate)}</td><td class="px-4 py-3 text-xs">${formatDateUI(i.followupDate)}</td><td class="px-4 py-3 text-center"><span class="px-2 py-1 text-[10px] font-bold rounded-full ${i.status==='completed'?'bg-emerald-500/20 text-emerald-400':'bg-red-500/20 text-rose-400'}">${i.status==='completed'?'Settled':'Unpaid'}</span></td><td class="px-4 py-3 text-xs truncate max-w-[100px]">${i.notes||'-'}</td><td class="px-4 py-3 text-center"><button onclick="editDebtorRecord('${b.replace(/'/g,"\\'")}')" class="text-blue-400 mr-2">Edit</button><button onclick="quickPayDebtor('${b.replace(/'/g,"\\'")}')" class="text-emerald-400 font-bold mr-2">Pay</button><button onclick="openDeleteModal('debtor', '${b.replace(/'/g,"\\'")}')" class="text-red-500">Del</button></td></tr>`;
+      });
+    }
+
+    function updateStockOutTable() {
+      const itb=document.getElementById('stock-in-table-body'), otb=document.getElementById('stock-out-table-body'); itb.innerHTML=''; otb.innerHTML='';
+      const balTb=document.getElementById('stock-balance-table-body'); if(balTb) balTb.innerHTML='';
+      
+      const ms=document.getElementById('stock-month-smart-filter').value, ys=document.getElementById('stock-year-smart-filter').value, sq=document.getElementById('stock-search').value.toLowerCase();
+      
+      let fs = stockRecords.filter(st => matchesSmartDateFilter(st.date, ms, ys) && (!sq || String(st.item||'').toLowerCase().includes(sq) || String(st.supplier||'').toLowerCase().includes(sq) || String(st.reason||'').toLowerCase().includes(sq)));
+      
+      let val=0, inQ=0, outQ=0; const iR=[], oR=[];
+      const balances = {}; // Live tracker
+
+      fs.forEach(st => { 
+        const oIdx=stockRecords.indexOf(st), q=parseInt(st.qty)||0, c=parseFloat(st.total)||0; 
+        
+        // Calculate grouping for live balance table
+        const rawName = String(st.item||'Unknown').trim();
+        const upperName = rawName.toUpperCase();
+        if (!balances[upperName]) balances[upperName] = { name: rawName, in: 0, out: 0 };
+
+        if(st.type==='IN'){ 
+          iR.push({...st,oIdx}); inQ+=q; val+=c; 
+          balances[upperName].in += q;
+        } else { 
+          oR.push({...st,oIdx}); outQ+=q; 
+          balances[upperName].out += q;
+        } 
+      });
+
+      // Update Top HUDs
+      document.getElementById('hud-stock-cost').innerText=`RM ${val.toFixed(2)}`; 
+      document.getElementById('hud-stock-in').innerText=`${inQ}`; 
+      document.getElementById('hud-stock-out').innerText=`${outQ}`;
+      document.getElementById('hud-stock-remain').innerText=`${inQ - outQ}`;
+
+      // Render the Live Balance Table
+      if (balTb) {
+        const balArray = Object.values(balances).sort((a, b) => a.name.localeCompare(b.name));
+        if(balArray.length === 0) {
+           balTb.innerHTML = `<tr><td colspan="4" class="px-4 py-6 text-center text-slate-500">No inventory matches your filter.</td></tr>`;
+        } else {
+           balArray.forEach(b => {
+             const remain = b.in - b.out;
+             let colorClass = remain > 0 ? 'text-emerald-400' : (remain === 0 ? 'text-slate-500' : 'text-rose-400');
+             balTb.innerHTML += `<tr class="border-b border-slate-800/50 hover:bg-slate-800/60 transition"><td class="px-4 py-2 font-semibold text-xs">${b.name}</td><td class="px-4 py-2 text-center text-slate-400 text-xs">${b.in}</td><td class="px-4 py-2 text-center text-slate-400 text-xs">${b.out}</td><td class="px-4 py-2 text-center font-black text-sm ${colorClass}">${remain}</td></tr>`;
+           });
+        }
+      }
+
+      // Render Paged IN/OUT Ledger Tables
+      const rnd=(arr, tb, curPg, pre, nxt, inf, cStr, sym) => {
+        const tp=Math.ceil(arr.length/itemsPerPage)||1; if(window[curPg]>tp) window[curPg]=tp; if(window[curPg]<1) window[curPg]=1; const st=(window[curPg]-1)*itemsPerPage; const p=arr.slice(st, st+itemsPerPage);
+        document.getElementById(inf).innerText=`Showing ${arr.length>0?st+1:0} to ${Math.min(st+itemsPerPage, arr.length)} of ${arr.length}`; document.getElementById(pre).disabled=window[curPg]===1; document.getElementById(nxt).disabled=window[curPg]===tp;
+        if(p.length===0){ tb.innerHTML=`<tr><td colspan="5" class="px-4 py-8 text-center text-slate-500">No records.</td></tr>`; return; }
+        p.forEach(i => { tb.innerHTML+=`<tr class="border-b border-slate-800/50"><td class="px-4 py-3 text-xs">${formatDateUI(i.date)}</td><td class="px-4 py-3 font-semibold">${i.item||'-'}<br><span class="text-[10px] text-slate-400">${i.reason||''}</span></td><td class="px-4 py-3 text-center font-bold ${cStr}">${sym}${i.qty||0}</td><td class="px-4 py-3 text-right font-mono">${(i.total||0).toFixed(2)}</td><td class="px-4 py-3 text-center"><button onclick="editStockRecord(${i.oIdx})" class="text-blue-400 mr-2">Edit</button><button onclick="openDeleteModal('stock', ${i.oIdx})" class="text-red-500">Del</button></td></tr>`; });
+      };
+      rnd(iR, itb, 'stockInCurrentPage', 'stock-in-prev-btn', 'stock-in-next-btn', 'stock-in-records-info', 'text-emerald-400', '+');
+      rnd(oR, otb, 'stockOutCurrentPage', 'stock-out-prev-btn', 'stock-out-next-btn', 'stock-out-records-info', 'text-rose-400', '-');
+      safeCreateIcons();
+    }
+
+    function updateOverheadTable() {
+      const tb=document.getElementById('overhead-table-body'); tb.innerHTML='';
+      const ms=document.getElementById('overhead-month-smart-filter').value, ys=document.getElementById('overhead-year-smart-filter').value, sq=document.getElementById('overhead-search').value.toLowerCase();
+      let fo = overheads.filter(o => matchesSmartDateFilter(o.date, ms, ys) && (!sq || String(o.category||'').toLowerCase().includes(sq) || String(o.desc||'').toLowerCase().includes(sq)));
+      const tot = fo.length; const tPg = Math.ceil(tot/itemsPerPage)||1;
+      if(overheadCurrentPage>tPg) overheadCurrentPage=tPg; if(overheadCurrentPage<1) overheadCurrentPage=1;
+      const st = (overheadCurrentPage-1)*itemsPerPage; const pData = fo.slice(st, st+itemsPerPage);
+      document.getElementById('overhead-records-info').innerText = `Showing ${tot>0?st+1:0} to ${Math.min(st+itemsPerPage, tot)} of ${tot}`;
+      document.getElementById('overhead-prev-btn').disabled=overheadCurrentPage===1; document.getElementById('overhead-next-btn').disabled=overheadCurrentPage===tPg;
+      if(pData.length===0){ tb.innerHTML=`<tr><td colspan="6" class="px-4 py-8 text-center text-slate-500">No expenses.</td></tr>`; return; }
+      pData.forEach(i => {
+        const oIdx = overheads.indexOf(i);
+        tb.innerHTML += `<tr class="border-b border-slate-800/50"><td class="px-4 py-3 text-xs">${formatDateUI(i.date)}</td><td class="px-4 py-3"><span class="px-2 py-1 bg-amber-500/10 text-amber-400 text-xs rounded">${i.category||'-'}</span></td><td class="px-4 py-3 font-semibold">${i.desc||'-'}</td><td class="px-4 py-3 text-right font-mono text-rose-400 font-bold">${(i.amount||0).toFixed(2)}</td><td class="px-4 py-3 text-center"><button onclick="editOverheadRecord(${oIdx})" class="text-blue-400 mr-2">Edit</button><button onclick="openDeleteModal('overhead', ${oIdx})" class="text-red-500">Del</button></td></tr>`;
+      });
+    }
+
+    function updateCommissionTable() {
+      const tb=document.getElementById('commission-table-body'); tb.innerHTML='';
+      const ms=document.getElementById('commission-month-smart-filter').value, ys=document.getElementById('commission-year-smart-filter').value;
+      const fs = sales.filter(s => matchesSmartDateFilter(s.date, ms, ys));
+      const map = {};
+      fs.forEach(s => { const p=String(s.PIC||'').trim()||'Unassigned'; if(!map[p]) map[p]={c:0,cm:0,pd:0}; map[p].c++; map[p].cm+=parseFloat(s.commission)||0; });
+      payouts.forEach(p => { const t=String(p.tech||'').trim(); if(map[t]) map[t].pd+=parseFloat(p.amount)||0; else if(t) map[t]={c:0,cm:0,pd:parseFloat(p.amount)||0}; });
+      const pics = Object.keys(map);
+      if(pics.length===0){ tb.innerHTML=`<tr><td colspan="5" class="px-4 py-8 text-center text-slate-500">No tech history.</td></tr>`; updatePayoutsHistoryTable(); return; }
+      pics.forEach(p => { const o = map[p].cm-map[p].pd; tb.innerHTML += `<tr class="border-b border-slate-800/50"><td class="px-4 py-3.5 font-bold flex items-center gap-2"><div class="w-6 h-6 rounded-full bg-violet-600/30 text-violet-300 flex items-center justify-center text-xs">${p.charAt(0).toUpperCase()}</div>${p}</td><td class="px-4 py-3.5 text-center">${map[p].c}</td><td class="px-4 py-3.5 text-right font-mono">RM ${map[p].cm.toFixed(2)}</td><td class="px-4 py-3.5 text-right font-mono text-emerald-400">RM ${map[p].pd.toFixed(2)}</td><td class="px-4 py-3.5 text-right font-mono font-black ${o>0?'text-amber-400':'text-slate-500'}">RM ${o.toFixed(2)}</td></tr>`; });
+      updatePayoutsHistoryTable();
+    }
+
+    function updatePayoutsHistoryTable() {
+        const tb=document.getElementById('payout-history-table-body'); if(!tb) return; tb.innerHTML='';
+        if(payouts.length===0){ tb.innerHTML=`<tr><td colspan="4" class="px-4 py-8 text-center text-slate-500">No payouts logged.</td></tr>`; return; }
+        payouts.forEach((p, idx) => { tb.innerHTML+=`<tr class="border-b border-slate-800/50"><td class="px-4 py-3 text-xs">${formatDateUI(p.date)}</td><td class="px-4 py-3 font-bold">${p.tech}</td><td class="px-4 py-3 text-right font-mono text-emerald-400">RM ${(parseFloat(p.amount)||0).toFixed(2)}</td><td class="px-4 py-3 text-center"><button onclick="openDeleteModal('payout', ${idx})" class="text-red-500">Del</button></td></tr>`; });
+    }
+
+    function toggleWarrantyStatus(index) { if (warrantyClaims[index]) { warrantyClaims[index].status = warrantyClaims[index].status==='completed'?'pending':'completed'; updateAllUI(); showToast("Status updated."); autoSyncPush(); } }
+    function quickPayDebtor(billNo) { const idx = debtors.findIndex(d => String(d.billNo||d["'billNo"]||'') === billNo); if (idx!==-1) { const r = debtors[idx].balance; if (r<=0) { showToast("Settled."); return; } const p = prompt(`Pay Balance - RM ${r.toFixed(2)}.\nAmount (RM):`, r); if (p===null) return; const v = parseFloat(p)||0; if (v<=0) return; debtors[idx].paid+=v; debtors[idx].balance=Math.max(0, debtors[idx].total-debtors[idx].paid); if (debtors[idx].balance===0) debtors[idx].status='completed'; updateAllUI(); showToast(`Paid RM ${v.toFixed(2)}`); autoSyncPush(); } }
+    function editSalesRecord(billNo) { const r = sales.find(s => String(s.billNo||s["'billNo"]||'') === billNo); if (r) { switchTab('tab-entry'); isManualCommission=true; editingSalesBillNo=billNo; ['billno','date','name','phone','model','item','pic','supplier','sales','cost','loss','commission','profit','net-profit','note'].forEach(k => document.getElementById(`form-${k}`).value = r[k]!==undefined?r[k]:document.getElementById(`form-${k}`).value); document.getElementById('sales-submit-btn').innerHTML = `Update Sale Record`; smoothScrollToTop(); } }
+    function editWarrantyRecord(idx) { const r = warrantyClaims[idx]; if (r) { switchTab('tab-warranty'); editingWarrantyIdx=idx; ['billno','date','name','phone','model','item','supplier','status','cost','loss','notes'].forEach(k => document.getElementById(`warranty-${k}`).value = r[k]!==undefined?r[k]:document.getElementById(`warranty-${k}`).value); document.getElementById('warranty-submit-btn').innerHTML = `Update Warranty`; smoothScrollToTop(); } }
+    function editDebtorRecord(billNo) { const r = debtors.find(d => String(d.billNo||d["'billNo"]||'') === billNo); if (r) { switchTab('tab-debtor'); editingDebtorBillNo=billNo; ['billno','name','phone','total','paid','balance','repair-date','followup-date','notes','status'].forEach(k => {const el=document.getElementById(`debtor-${k}`); if(el) el.value = r[k.replace('-','')]!==undefined?r[k.replace('-','')]:el.value;}); document.getElementById('debtor-submit-btn').innerHTML = `Update Debtor`; smoothScrollToTop(); } }
+    function editStockRecord(idx) { const r = stockRecords[idx]; if (r) { switchTab('tab-stock'); editingStockIdx=idx; ['type','date','item-name','supplier','qty','unit-cost','reason','pic','notes'].forEach(k => {const tk=k.replace('-name','').replace('-cost',''); const el=document.getElementById(`stock-${k}`); if(el) el.value = r[tk]!==undefined?r[tk]:el.value;}); document.getElementById('stock-submit-btn').innerHTML = `Update Stock`; smoothScrollToTop(); } }
+    function editOverheadRecord(idx) { const r = overheads[idx]; if (r) { switchTab('tab-overhead'); editingOverheadIdx=idx; ['date','category','desc','amount','notes'].forEach(k => document.getElementById(`overhead-${k}`).value = r[k]!==undefined?r[k]:document.getElementById(`overhead-${k}`).value); document.getElementById('overhead-submit-btn').innerHTML = `Update Expense`; smoothScrollToTop(); } }
+
+    function renderChart() {
+      const ctx = document.getElementById('revenue-chart').getContext('2d'); const interval = document.getElementById('graph-period').value;
+      if (revenueChart) revenueChart.destroy(); const gr = {};
+      sales.forEach(s => { let k = String(s.date||''); if (interval==='month') k=k.substring(0,7); if (interval==='year') k=k.substring(0,4); if (k) { if(!gr[k]) gr[k]={s:0,n:0}; gr[k].s+=parseFloat(s.sales)||0; gr[k].n+=parseFloat(s.netProfit)||0; } });
+      stockRecords.forEach(st => { if(st.type==='OUT') { let k = String(st.date||''); if (interval==='month') k=k.substring(0,7); if (interval==='year') k=k.substring(0,4); if (k && gr[k]) gr[k].n-=parseFloat(st.total)||0; } });
+      overheads.forEach(o => { let k = String(o.date||''); if (interval==='month') k=k.substring(0,7); if (interval==='year') k=k.substring(0,4); if (k && gr[k]) gr[k].n-=parseFloat(o.amount)||0; });
+      const ks = Object.keys(gr).sort();
+      revenueChart = new Chart(ctx, { type: 'line', data: { labels: ks.length>0?ks:['No Data'], datasets: [ { label: 'Gross (RM)', data: ks.map(k=>gr[k].s), borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', fill: true, tension: 0.3 }, { label: 'Net (RM)', data: ks.map(k=>gr[k].n), borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill: true, tension: 0.3 } ] }, options: { responsive: true, maintainAspectRatio: false } });
+    }
+
+    // ==========================================
+    // EXCLUSIVE SINGLE-INSTANCE CLOUD ENGINE
+    // ==========================================
+    function initEndpointSyncUI() {
+      const urlInput = document.getElementById('sheet-endpoint-url');
+      urlInput.value = sheetEndpoint;
+      updateSyncStatusWidget();
+
+      document.getElementById('save-endpoint-btn').addEventListener('click', function() {
+        let url = urlInput.value.trim();
+        if (!url) { alert("Please enter your Web App URL."); return; }
+        
+        // URL validation logic updated to prevent docs.google.com breakages
+        if (!url.includes("script.google.com")) {
+            alert("❌ INVALID URL\n\nPlease enter a Google Apps Script Web App URL, not a Google Sheets URL.");
+            return;
+        }
+
+        url = url.split('?')[0];
+        
+        sheetEndpoint = url;
+        localStorage.setItem('rexstop_sheet_url', url);
+        updateSyncStatusWidget();
+        
+        alert("✅ CLOUD CONFIGURATION SECURED!\n\nYour URL is locked into memory. Starting background sync now...");
+        syncDataPull(); 
+      });
+
+      document.getElementById('disconnect-endpoint-btn').addEventListener('click', () => {
+        sheetEndpoint = ""; localStorage.removeItem('rexstop_sheet_url'); urlInput.value = "";
+        sales=[]; warrantyClaims=[]; debtors=[]; stockRecords=[]; overheads=[]; payouts=[];
+        updateSyncStatusWidget(); updateAllUI(); showToast("Cloud link disconnected.");
+      });
+      document.getElementById('manual-pull-btn').addEventListener('click', () => { showToast("Forcing download...", true); syncDataPull(); });
+      document.getElementById('manual-push-btn').addEventListener('click', () => { showToast("Forcing upload...", true); syncDataPush(); });
+      document.getElementById('copy-script-btn').addEventListener('click', () => { navigator.clipboard.writeText(document.getElementById('sheet-script-code').innerText); showToast("Script Copied!"); });
+    }
+
+    function updateSyncStatusWidget() {
+      const d = document.getElementById('status-dot'), t = document.getElementById('status-text'), pl = document.getElementById('manual-pull-btn'), pu = document.getElementById('manual-push-btn');
+      if (sheetEndpoint) { d.className="w-2.5 h-2.5 rounded-full bg-emerald-500"; t.innerText="Connected to Sheets"; pl.disabled=false; pu.disabled=false; } 
+      else { d.className="w-2.5 h-2.5 rounded-full bg-red-500"; t.innerText="Offline (Awaiting URL)"; pl.disabled=true; pu.disabled=true; }
+    }
+
+    function autoSyncPush() { if (sheetEndpoint) syncDataPush(); }
+
+    function syncDataPull() {
+      if (!sheetEndpoint) return;
+      const btn = document.getElementById('manual-pull-btn'); const orig = btn.innerText; btn.innerText = `Downloading...`; btn.disabled = true;
+      fetch(sheetEndpoint + '?t=' + new Date().getTime(), { method: 'GET', redirect: 'follow' })
+        .then(r => r.text())
+        .then(text => {
+          btn.innerText = orig; btn.disabled = false;
+          if (text.includes('Sign in') || text.includes('<html')) { alert("❌ SYNC BLOCKED BY GOOGLE\n\nGoogle Sheets is refusing to send data to the app.\n\nHOW TO FIX:\n1. Go to Apps Script > Deploy > Manage Deployments.\n2. Click the Pencil (Edit).\n3. Change 'Who Has Access' to 'Anyone'.\n4. Re-deploy and try again."); return; }
+          try {
+            const res = JSON.parse(text);
+            if (res.status === 'success' && res.data) {
+              sales=res.data.Sales||[]; warrantyClaims=res.data.Warranty||[]; debtors=res.data.Debtors||[]; stockRecords=res.data.StockCount||[]; overheads=res.data.Overheads||[]; payouts=res.data.Payouts||[];
+              const cl = (d) => { if(!d)return''; let s=String(d).split('T')[0]; const sep=s.includes('/')?'/':(s.includes('-')?'-':null); if(sep){const p=s.split(sep); if(p.length===3&&p[2].split(' ')[0].length===4) return `${p[2].split(' ')[0]}-${String(p[1]).padStart(2,'0')}-${String(p[0]).padStart(2,'0')}`;} return s; };
+              sales.forEach(s => { s.date=cl(s.date); s.sales=parseFloat(s.sales)||0; s.cost=parseFloat(s.cost)||0; s.loss=parseFloat(s.loss)||0; s.commission=parseFloat(s.commission)||0; s.netProfit=parseFloat(s.netProfit)||0; });
+              warrantyClaims.forEach(w => { w.date=cl(w.date); w.cost=parseFloat(w.cost)||0; w.loss=parseFloat(w.loss)||0; });
+              debtors.forEach(d => { d.repairDate=cl(d.repairDate); d.followupDate=cl(d.followupDate); d.total=parseFloat(d.total)||0; d.paid=parseFloat(d.paid)||0; d.balance=parseFloat(d.balance)||0; });
+              stockRecords.forEach(st => { st.date=cl(st.date); st.qty=parseInt(st.qty)||0; st.cost=parseFloat(st.cost)||0; st.total=parseFloat(st.total)||0; });
+              overheads.forEach(o => { o.date=cl(o.date); o.amount=parseFloat(o.amount)||0; }); payouts.forEach(p => { p.date=cl(p.date); p.amount=parseFloat(p.amount)||0; });
+              document.getElementById('form-billno').value = getNextBillNo(); updateAllUI(); showToast("Database Synced!");
+            }
+          } catch (e) { alert("❌ SYNC FAILED: Data is corrupted. Are your 6 tabs named correctly?"); }
+        }).catch(err => { btn.innerText = orig; btn.disabled = false; alert("⚠️ NETWORK ERROR: Browser blocked the request."); });
+    }
+
+    function syncDataPush() {
+      if (!sheetEndpoint) return;
+      const btn = document.getElementById('manual-push-btn'); const orig = btn.innerText; btn.innerText = `Uploading...`; btn.disabled = true;
+      const cvt = (arr) => arr.map(r => { let n={...r}; ['date','repairDate','followupDate'].forEach(f=>{if(n[f]&&String(n[f]).includes('-')){const p=String(n[f]).split('-');if(p.length===3)n[f]=`${p[2]}/${p[1]}/${p[0]}`;} }); return n; });
+      
+      // FIXED FETCH LOGIC: Added headers to prevent CORS preflight block
+      fetch(sheetEndpoint, { 
+          method: 'POST', 
+          redirect: 'follow', 
+          headers: {
+             "Content-Type": "text/plain;charset=utf-8"
+          },
+          body: JSON.stringify({ Sales:cvt(sales), Warranty:cvt(warrantyClaims), Debtors:cvt(debtors), StockCount:cvt(stockRecords), Overheads:cvt(overheads), Payouts:cvt(payouts) }) 
+      })
+        .then(r => r.text()).then(t => { btn.innerText=orig; btn.disabled=false; try { const d=JSON.parse(t); if(d.status==='success') showToast("Changes saved to Cloud!"); else alert("❌ Error: "+d.message); } catch(e) { alert("❌ Upload Error."); } })
+        .catch(e => { btn.innerText=orig; btn.disabled=false; alert("⚠️ NETWORK ERROR."); });
+    }
+  </script>
+ </body>
+</html>
